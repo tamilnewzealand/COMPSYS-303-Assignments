@@ -179,6 +179,37 @@ void simple_tlc(int* state)
 		if (*state == 6) *state = 0;
 		// Restart timer with new timeout value
 	}
+	
+	//Switch which LED is on based on mode 
+	switch (*state) {
+		case RR0:
+			//LED bit 5 and 2 on (0010 0100)
+			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[0]);//0x24
+			break;
+		case YR:
+			//LED bit 5 and 0 on (0001 0100)
+			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[1]);//0x14
+			break;
+		case GR:
+			//LED bit 5 and 1 on (0000 1100)
+			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[2]);//0x0C
+			break;
+		case RR1:
+			//LED bit 5 and 2 on (0010 0100)
+			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[3]);//0x24
+			break;
+		case RY:
+			//LED bit 3 and 2 on (0010 0010)
+			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[4]);//0x22
+			break;
+		case RG:
+			//LED bit 4 and 2 on (0010 0001)
+			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[5]);//0x21
+			break;
+		case default:
+			//All LED off
+			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x00);
+			break;
 }
 
 
