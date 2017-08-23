@@ -62,6 +62,9 @@ void timeout_data_handler(void);
 #define TIMEOUT_NUM 6			// number of timeouts
 #define TIME_LEN 8				// buffer length for time digits
 
+#define ESC 27
+#define CLEAR_LCD_STRING "[2J"
+
 
 // USER DATA TYPES
 // Timeout buffer structure
@@ -95,6 +98,7 @@ static TimeBuf timeout_buf = { -1, {500, 6000, 2000, 500, 6000, 2000} };
 
 // UART
 FILE* fp;
+FILE* lcd;
 
 // Traffic light LED values
 //static unsigned char traffic_lights[TIMEOUT_NUM] = {0x90, 0x50, 0x30, 0x90, 0x88, 0x84};
@@ -122,7 +126,11 @@ void init_tlc(void)
  */
 void lcd_set_mode(unsigned int mode)
 {
-  
+	if(lcd != NULL) {
+		fprintf(lcd, "%c%s", ESC, CLEAR_LCD_STRING)
+		fprintf(lcd, "Current Mode: %d\n", mode);
+	}
+
 }
 
 /* DESCRIPTION: Performs button-press detection and debouncing
@@ -165,10 +173,12 @@ void simple_tlc(int* state)
 	}
 	
 	// If the timeout has occured 
-	/*
+	if (timeout == 1) { // have no idea with this line
 		// Increase state number (within bounds) 
+		(*state)++;
+		if (*state == 6) *state = 0;
 		// Restart timer with new timeout value
-	*/
+	}
 }
 
 
@@ -373,6 +383,7 @@ int main(void)
 {	
 	int buttons = 0;			// status of mode button
 	
+	lcd = fopen(LCD_0_Name, "w");
 	lcd_set_mode(0);		// initialize lcd
 	init_buttons_pio();			// initialize buttons
 	while (1) {
