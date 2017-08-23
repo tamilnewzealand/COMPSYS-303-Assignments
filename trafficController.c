@@ -171,14 +171,18 @@ void simple_tlc(int* state)
 		(*state)++;
 		return;
 	}
+
+	int timeout = 0;
+	void* timerContext = (void*) &timeout;
+	alt_alarm_start(&tlc_timer, 1000, tlc_timer_isr, timerContext)
 	
 	// If the timeout has occured 
-	if (timeout == 1) { // have no idea with this line
-		// Increase state number (within bounds) 
-		(*state)++;
-		if (*state == 6) *state = 0;
-		// Restart timer with new timeout value
-	}
+	while (timeout == 0);
+	
+	// Increase state number (within bounds) 
+	(*state)++;
+	if (*state == 6) *state = 0;
+	alt_alarm_start(&tlc_timer, 1000, tlc_timer_isr, timerContext)
 	
 	//Switch which LED is on based on mode 
 	switch (*state) {
@@ -417,6 +421,7 @@ int main(void)
 	lcd = fopen(LCD_0_Name, "w");
 	lcd_set_mode(0);		// initialize lcd
 	init_buttons_pio();			// initialize buttons
+
 	while (1) {
 		// Button detection & debouncing
 		
