@@ -1,7 +1,7 @@
 /* Traffic Light Controller
- *
- * --- Code is best viewed with the tab size of 4. ---
- */
+*
+* --- Code is best viewed with the tab size of 4. ---
+*/
 
 #include <system.h>
 #include <sys/alt_alarm.h>
@@ -113,6 +113,7 @@ static unsigned char traffic_lights[TIMEOUT_NUM] = {0x24, 0x14, 0x0C, 0x24, 0x22
 enum traffic_states {RR0, GR, YR, RR1, RG, RY};
 
 static unsigned int mode = 0;
+static unsigned int newMode = 0;
 // Process states: use -1 as initialization state
 static int proc_state[OPERATION_MODES + 1] = {-1, -1, -1, -1};
 
@@ -129,9 +130,9 @@ void init_tlc(void)
 	
 	
 /* DESCRIPTION: Writes the mode to the LCD screen
- * PARAMETER:   mode - the current mode
- * RETURNS:     none
- */
+* PARAMETER:   mode - the current mode
+* RETURNS:     none
+*/
 void lcd_set_mode(unsigned int mode)
 {
 	if(lcd != NULL) {
@@ -142,9 +143,9 @@ void lcd_set_mode(unsigned int mode)
 }
 
 /* DESCRIPTION: Performs button-press detection and debouncing
- * PARAMETER:   button - referenced argument to indicate the state of the button
- * RETURNS:     none
- */
+* PARAMETER:   button - referenced argument to indicate the state of the button
+* RETURNS:     none
+*/
 void buttons_driver(int* button)
 {
 	// Persistant state of 'buttons_driver'
@@ -157,9 +158,9 @@ void buttons_driver(int* button)
 
 
 /* DESCRIPTION: Updates the ID of the task to be executed and the 7-segment display
- * PARAMETER:   taskid - current task ID
- * RETURNS:     none
- */
+* PARAMETER:   taskid - current task ID
+* RETURNS:     none
+*/
 void handle_mode_button(unsigned int* taskid)
 {
 	// Increment mode
@@ -168,9 +169,9 @@ void handle_mode_button(unsigned int* taskid)
 
 
 /* DESCRIPTION: Simple traffic light controller
- * PARAMETER:   state - state of the controller
- * RETURNS:     none
- */
+* PARAMETER:   state - state of the controller
+* RETURNS:     none
+*/
 void simple_tlc(int* state)
 {
 	if (*state == -1) {
@@ -228,10 +229,10 @@ void simple_tlc(int* state)
 
 
 /* DESCRIPTION: Handles the traffic light timer interrupt
- * PARAMETER:   context - opaque reference to user data
- * RETURNS:     Number of 'ticks' until the next timer interrupt. A return value
- *              of zero stops the timer. 
- */
+* PARAMETER:   context - opaque reference to user data
+* RETURNS:     Number of 'ticks' until the next timer interrupt. A return value
+*              of zero stops the timer. 
+*/
 alt_u32 tlc_timer_isr(void* context)
 {
 	volatile int* trigger = (volatile int*)context;
@@ -241,9 +242,9 @@ alt_u32 tlc_timer_isr(void* context)
 
 
 /* DESCRIPTION: Initialize the interrupts for all buttons
- * PARAMETER:   none
- * RETURNS:     none
- */
+* PARAMETER:   none
+* RETURNS:     none
+*/
 void init_buttons_pio(void)
 {
 	int buttonValue = 1;
@@ -260,9 +261,9 @@ void init_buttons_pio(void)
 
 
 /* DESCRIPTION: Pedestrian traffic light controller
- * PARAMETER:   state - state of the controller
- * RETURNS:     none
- */
+* PARAMETER:   state - state of the controller
+* RETURNS:     none
+*/
 void pedestrian_tlc(int* state)
 {	
 	if (*state == -1) {
@@ -277,11 +278,11 @@ void pedestrian_tlc(int* state)
 	if (timerCount > 0) {
 		void* timerContext = (void*) &timerCount;
 		alt_alarm_start(&tlc_timer, timeout[(*state)], tlc_timer_isr, timerContext);
-		
+
 		// Increase state number (within bounds) 
 		(*state)++;
 		if (*state == 6) *state = 0;
-		
+
 		if ((*state == 0) && (pedestrianNS == 1)) pedestrianState = 1;
 		else pedestrianState = 0;
 		
@@ -338,10 +339,10 @@ void pedestrian_tlc(int* state)
 
 
 /* DESCRIPTION: Handles the NSEW pedestrian button interrupt
- * PARAMETER:   context - opaque reference to user data
- *              id - hardware interrupt number for the device
- * RETURNS:     none
- */
+* PARAMETER:   context - opaque reference to user data
+*              id - hardware interrupt number for the device
+* RETURNS:     none
+*/
 void NSEW_ped_isr(void* context, alt_u32 id)
 {
 	// NOTE:
@@ -359,9 +360,9 @@ void NSEW_ped_isr(void* context, alt_u32 id)
 
 
 /* DESCRIPTION: Configurable traffic light controller
- * PARAMETER:   state - state of the controller
- * RETURNS:     none
- */
+* PARAMETER:   state - state of the controller
+* RETURNS:     none
+*/
 /*
 If there is new configuration data... Load it.
 Else run pedestrian_tlc();
@@ -378,10 +379,10 @@ void configurable_tlc(int* state)
 
 
 /* DESCRIPTION: Implements the state machine of the traffic light controller in 
- *              the ***configuration*** phase
- * PARAMETER:   tl_state - state of the traffic light
- * RETURNS:     Returns the state of the configuration phase
- */
+*              the ***configuration*** phase
+* PARAMETER:   tl_state - state of the traffic light
+* RETURNS:     Returns the state of the configuration phase
+*/
 /*
 Puts the TLC in a 'safe' state... then begins update
 */
@@ -401,11 +402,11 @@ int config_tlc(int* tl_state)
 
 
 /* DESCRIPTION: Parses the configuration string and updates the timeouts
- * PARAMETER:   none
- * RETURNS:     none
- */
+* PARAMETER:   none
+* RETURNS:     none
+*/
 /*
- buffer_timeout() must be used 'for atomic transfer to the main timeout buffer'
+buffer_timeout() must be used 'for atomic transfer to the main timeout buffer'
 */
 void timeout_data_handler(void)
 {
@@ -414,10 +415,10 @@ void timeout_data_handler(void)
 
 
 /* DESCRIPTION: Stores the new timeout values in a secondary buffer for atomic 
- *              transfer to the main timeout buffer at a later stage
- * PARAMETER:   value - value to store in the buffer
- * RETURNS:     none
- */
+*              transfer to the main timeout buffer at a later stage
+* PARAMETER:   value - value to store in the buffer
+* RETURNS:     none
+*/
 void buffer_timeout(unsigned int value)
 {
 	
@@ -425,21 +426,21 @@ void buffer_timeout(unsigned int value)
 
 
 /* DESCRIPTION: Implements the update operation of timeout values as a critical 
- *              section by ensuring that timeouts are fully received before 
- *              allowing the update
- * PARAMETER:   none
- * RETURNS:     1 if update is completed; 0 otherwise
- */
+*              section by ensuring that timeouts are fully received before 
+*              allowing the update
+* PARAMETER:   none
+* RETURNS:     1 if update is completed; 0 otherwise
+*/
 int update_timeout(void)
 {
 	
 }
 
 /* DESCRIPTION: Handles the red light camera timer interrupt
- * PARAMETER:   context - opaque reference to user data
- * RETURNS:     Number of 'ticks' until the next timer interrupt. A return value
- *              of zero stops the timer. 
- */
+* PARAMETER:   context - opaque reference to user data
+* RETURNS:     Number of 'ticks' until the next timer interrupt. A return value
+*              of zero stops the timer. 
+*/
 alt_u32 camera_timer_isr(void* context)
 {
 	volatile int* trigger = (volatile int*)context;
@@ -448,13 +449,13 @@ alt_u32 camera_timer_isr(void* context)
 }	
 
 /* DESCRIPTION: Camera traffic light controller
- * PARAMETER:   state - state of the controller
- * RETURNS:     none
- */
- /*
- Same functionality as configurable_tlc
- But also handles Red-light camera
- */
+* PARAMETER:   state - state of the controller
+* RETURNS:     none
+*/
+/*
+Same functionality as configurable_tlc
+But also handles Red-light camera
+*/
 void camera_tlc(int* state)
 {
 	if (*state == -1) {
@@ -466,9 +467,9 @@ void camera_tlc(int* state)
 
 
 /* DESCRIPTION: Simulates the entry and exit of vehicles at the intersection
- * PARAMETER:   none
- * RETURNS:     none
- */
+* PARAMETER:   none
+* RETURNS:     none
+*/
 void handle_vehicle_button(void)
 {
 	
@@ -502,15 +503,22 @@ int main(void)
 
 	while (1) {
 		// Button detection & debouncing
-		
-		// if Mode button pushed:
-			// Set current TLC state to -1
-			// handle_mode_button to change state & display
+		newMode = IORD_ALTERA_AVALON_PIO_DATA(SWITCHES_BASE);
+		printf("Running...\n");
+
+		if (newMode != mode) {
+			if ((proc_state[mode] == RR0) | (proc_state[mode] == RR1)) {
+				proc_state[mode] = -1;
+				mode = newMode;
+				lcd_set_mode(mode);
+			}
+		}
+
 		// if Car button pushed...
 			// handle_vehicle_button
-    	
+		
 		// Execute the correct TLC
-    	switch (mode) {
+		switch (mode) {
 			case 0:
 				simple_tlc(&proc_state[0]);
 				break;
