@@ -127,7 +127,7 @@ void init_tlc(void)
 void lcd_set_mode(unsigned int mode)
 {
 	if(lcd != NULL) {
-		fprintf(lcd, "%c%s", ESC, CLEAR_LCD_STRING)
+		fprintf(lcd, "%c%s", ESC, CLEAR_LCD_STRING);
 		fprintf(lcd, "Current Mode: %d\n", mode);
 	}
 
@@ -174,15 +174,15 @@ void simple_tlc(int* state)
 
 	int timeout = 0;
 	void* timerContext = (void*) &timeout;
-	alt_alarm_start(&tlc_timer, 1000, tlc_timer_isr, timerContext)
+	alt_alarm_start(&tlc_timer, 1000, tlc_timer_isr, timerContext);
 	
-	// If the timeout has occured 
+	// Wait until the timeout has occured 
 	while (timeout == 0);
 	
 	// Increase state number (within bounds) 
 	(*state)++;
 	if (*state == 6) *state = 0;
-	alt_alarm_start(&tlc_timer, 1000, tlc_timer_isr, timerContext)
+	alt_alarm_start(&tlc_timer, 1000, tlc_timer_isr, timerContext);
 	
 	//Switch which LED is on based on mode 
 	switch (*state) {
@@ -210,10 +210,11 @@ void simple_tlc(int* state)
 			//LED bit 4 and 2 on (0010 0001)
 			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[5]);//0x21
 			break;
-		case default:
+		default:
 			//All LED off
 			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x00);
 			break;
+	}
 }
 
 
@@ -411,14 +412,11 @@ int is_vehicle_left(void)
 }
 
 
-
-
-
 int main(void)
 {	
 	int buttons = 0;			// status of mode button
 	
-	lcd = fopen(LCD_0_Name, "w");
+	lcd = fopen(LCD_NAME, "w");
 	lcd_set_mode(0);		// initialize lcd
 	init_buttons_pio();			// initialize buttons
 
