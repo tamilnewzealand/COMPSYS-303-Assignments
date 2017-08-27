@@ -84,6 +84,9 @@ static volatile int tlc_timer_event = 0;
 static volatile int camera_timer_event = 0;
 static volatile int pedestrianNS = 0;
 static volatile int pedestrianEW = 0;
+static volatile int pedestrianNSstate = 0;
+static volatile int pedestrianESstate = 0;
+static volatile int pedestrianState = 0;
 
 // 4 States of 'Detection':
 // Car Absent
@@ -116,7 +119,11 @@ static int proc_state[OPERATION_MODES + 1] = {-1, -1, -1, -1};
 // for any / all modes
 void init_tlc(void)
 {
-	
+	pedestrianESstate = 0;
+	pedestrianNSstate = 0;
+	pedestrianState = 0;
+	pedestrianEW = 0;
+	pedestrianNS = 0;
 }
 	
 	
@@ -237,9 +244,16 @@ alt_u32 tlc_timer_isr(void* context)
  */
 void init_buttons_pio(void)
 {
-	// Initialize NS/EW pedestrian button		
-	// Reset the edge capture register
-	
+	int buttonValue = 1;
+	void* context = (void*) &buttonValue;
+
+	// clears the edge capture register
+	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(BUTTONS_BASE, 0);
+	// enable interrupts for all buttons
+	IOWR_ALTERA_AVALON_PIO_IRQ_MASK(BUTTONS_BASE, 0x7);
+
+	// register the ISR
+	alt_irq_register(BUTTONS_IRQ, context, NSEW_ped_isr);
 }
 
 
@@ -256,10 +270,68 @@ void pedestrian_tlc(int* state)
 		return;
 	}
 	
-	// Same as simple TLC
-	// with additional states / signals for Pedestrian crossings
+	int timeout = 0;
+	void* timerContext = (void*) &timeout;
+	alt_alarm_start(&tlc_timer, 1000, tlc_timer_isr, timerContext);
 	
+	// Wait until the timeout has occured 
+	while (timeout == 0);
 	
+	// Increase state number (within bounds) 
+	(*state)++;
+	if (*state == 6) *state = 0;
+	
+	if ((*state == 0) && (pedestrianNS == 1)) pedestrianState = 1;
+	else pedestrianState = 0;
+	
+	if (*state == 2) {
+		pedestrianState = 0;
+		pedestrianNS = 0;
+	}
+	
+	if ((*state == 3) && (pedestrianEW == 1)) pedestrianState = 1;
+	else pedestrianState = 0;
+
+	if (*state == 5) {
+		pedestrianState = 0;
+		pedestrianEW = 0;
+	}
+
+	alt_alarm_start(&tlc_timer, 1000, tlc_timer_isr, timerContext);
+
+	//Switch which LED is on based on mode 
+	switch (*state) {
+		case RR0:
+			//LED bit 5 and 2 on (0010 0100)
+			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[0]);//0x24
+			break;
+		case YR:
+			//LED bit 5 and 0 on (0001 0100)
+			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[1]);//0x14
+			break;
+		case GR:
+			//LED bit 5 and 1 on (0000 1100)
+			if (pedestrianState) IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x8C);//0x8C
+			else IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[2]);//0x0C
+			break;
+		case RR1:
+			//LED bit 5 and 2 on (0010 0100)
+			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[3]);//0x24
+			break;
+		case RY:
+			//LED bit 3 and 2 on (0010 0010)
+			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[4]);//0x22
+			break;
+		case RG:
+			//LED bit 4 and 2 on (0010 0001)
+			if (pedestrianState) IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x61);//0x21
+			else IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[5]);//0x21
+			break;
+		default:
+			//All LED off
+			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x00);
+			break;
+	}
 }
 
 
@@ -273,8 +345,14 @@ void NSEW_ped_isr(void* context, alt_u32 id)
 	// NOTE:
 	// Cast context to volatile to avoid unwanted compiler optimization.
 	// Store the value in the Button's edge capture register in *context
-	
-	
+
+	int* temp = (int*) context; // need to cast the context first before using it
+	(*temp) = IORD_ALTERA_AVALON_PIO_EDGE_CAP(BUTTONS_BASE);
+	// clear the edge capture register
+	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(BUTTONS_BASE, 0);
+
+	if (((*temp) & 0x01) > 0) pedestrianNS = 1;
+	if (((*temp) & 0x02) > 0) pedestrianEW = 1;
 }
 
 
