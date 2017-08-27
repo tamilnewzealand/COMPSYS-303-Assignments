@@ -87,6 +87,7 @@ static volatile int pedestrianEW = 0;
 static volatile int pedestrianNSstate = 0;
 static volatile int pedestrianESstate = 0;
 static volatile int pedestrianState = 0;
+static volatile int timerCount = 0;
 
 // 4 States of 'Detection':
 // Car Absent
@@ -96,7 +97,7 @@ static volatile int pedestrianState = 0;
 static int vehicle_detected = 0;
 
 // Traffic light timeouts
-static unsigned int timeout[TIMEOUT_NUM] = {500, 6000, 2000, 500, 6000, 2000};
+static unsigned int timeout[TIMEOUT_NUM] = {6000, 500, 2000, 6000, 500, 2000};
 static TimeBuf timeout_buf = { -1, {500, 6000, 2000, 500, 6000, 2000} };
 
 // UART
@@ -176,21 +177,22 @@ void simple_tlc(int* state)
 		// Process initialization state
 		init_tlc();
 		(*state)++;
+		void* timerContext = (void*) &timerCount;
+		alt_alarm_start(&tlc_timer, timeout[(*state)], tlc_timer_isr, timerContext);
 		return;
 	}
 
-	int timeout = 0;
-	void* timerContext = (void*) &timeout;
-	alt_alarm_start(&tlc_timer, 1000, tlc_timer_isr, timerContext);
-	
-	// Wait until the timeout has occured 
-	while (timeout == 0);
-	
-	// Increase state number (within bounds) 
-	(*state)++;
-	if (*state == 6) *state = 0;
-	alt_alarm_start(&tlc_timer, 1000, tlc_timer_isr, timerContext);
-	
+	if (timerCount > 0) {
+		void* timerContext = (void*) &timerCount;
+		alt_alarm_start(&tlc_timer, timeout[(*state)], tlc_timer_isr, timerContext);
+
+		// Increase state number (within bounds) 
+		(*state)++;
+		if (*state == 6) *state = 0;
+
+		timerCount = 0;
+	}
+
 	//Switch which LED is on based on mode 
 	switch (*state) {
 		case RR0:
@@ -267,37 +269,37 @@ void pedestrian_tlc(int* state)
 		// Process initialization state
 		init_tlc();
 		(*state)++;
+		void* timerContext = (void*) &timerCount;
+		alt_alarm_start(&tlc_timer, timeout[(*state)], tlc_timer_isr, timerContext);
 		return;
 	}
-	
-	int timeout = 0;
-	void* timerContext = (void*) &timeout;
-	alt_alarm_start(&tlc_timer, 1000, tlc_timer_isr, timerContext);
-	
-	// Wait until the timeout has occured 
-	while (timeout == 0);
-	
-	// Increase state number (within bounds) 
-	(*state)++;
-	if (*state == 6) *state = 0;
-	
-	if ((*state == 0) && (pedestrianNS == 1)) pedestrianState = 1;
-	else pedestrianState = 0;
-	
-	if (*state == 2) {
-		pedestrianState = 0;
-		pedestrianNS = 0;
-	}
-	
-	if ((*state == 3) && (pedestrianEW == 1)) pedestrianState = 1;
-	else pedestrianState = 0;
 
-	if (*state == 5) {
-		pedestrianState = 0;
-		pedestrianEW = 0;
-	}
+	if (timerCount > 0) {
+		void* timerContext = (void*) &timerCount;
+		alt_alarm_start(&tlc_timer, timeout[(*state)], tlc_timer_isr, timerContext);
+		
+		// Increase state number (within bounds) 
+		(*state)++;
+		if (*state == 6) *state = 0;
+		
+		if ((*state == 0) && (pedestrianNS == 1)) pedestrianState = 1;
+		else pedestrianState = 0;
+		
+		if (*state == 2) {
+			pedestrianState = 0;
+			pedestrianNS = 0;
+		}
+		
+		if ((*state == 3) && (pedestrianEW == 1)) pedestrianState = 1;
+		else pedestrianState = 0;
 
-	alt_alarm_start(&tlc_timer, 1000, tlc_timer_isr, timerContext);
+		if (*state == 5) {
+			pedestrianState = 0;
+			pedestrianEW = 0;
+		}
+
+		timerCount = 0;
+	}
 
 	//Switch which LED is on based on mode 
 	switch (*state) {
