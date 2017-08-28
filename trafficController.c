@@ -77,6 +77,7 @@ typedef struct  {
 // GLOBAL VARIABLES
 static alt_alarm tlc_timer;		// alarm used for traffic light timing
 static alt_alarm camera_timer;	// alarm used for camera timing
+static alt_alarm button_timer;	// alarm used for camera timing
 
 // NOTE:
 // set contexts for ISRs to be volatile to avoid unwanted Compiler optimisation
@@ -87,6 +88,13 @@ static volatile int pedestrianEW = 0;
 static volatile int pedestrianNSstate = 0;
 static volatile int pedestrianESstate = 0;
 static volatile int pedestrianState = 0;
+static volatile int KEY_TWO = 0;
+static volatile int OLD_KEY_TWO = 0;
+static volatile int button_count = 0;
+static volatile int carEnter = 0;
+static volatile int carExit = 0;
+static volatile int red_light_flag = 0;
+static volatile int red_light_clear = 0;
 static volatile int timerCount = 0;
 
 // 4 States of 'Detection':
@@ -366,6 +374,9 @@ void NSEW_ped_isr(void* context, alt_u32 id)
 
 	if (((*temp) & 0x01) > 0) pedestrianNS = 1;
 	if (((*temp) & 0x02) > 0) pedestrianEW = 1;
+
+	if (((*temp) & 0x04) > 0) KEY_TWO = 1;
+	else KEY_TWO = 0;
 }
 
 
@@ -475,13 +486,38 @@ But also handles Red-light camera
 */
 void camera_tlc(int* state)
 {
-	if (*state == -1) {
-		configurable_tlc(state);
-		return;
-	}	
-	
+	configurable_tlc(&state);
+	if (((*state) == YR) || ((*state) == RY)) {
+		if (carEnter == 1) {
+			printf("Camera Activated\n");
+			red_light_clear = 0;
+			red_light_flag = 0;
+			void* timerContext = (void*) &red_light_flag;
+			alt_alarm_start(&camera_timer, CAMERA_TIMEOUT, camera_timer_isr, timerContext);
+		}
+	}
+
+	if (carExit == 1) {
+		red_light_clear = 1;
+		printf("Vehicle Left\n");
+	}
+
+	if ((red_light_flag == 1) && (red_light_clear == 0)) {
+		printf("Snapshot Taken\n");
+	}
 }
 
+alt_u32 button_timer_isr(void* context)
+{
+	if (button_count > 0) {
+		carEnter = 0;
+		carExit = 0;
+		if ((x & 1) == 0) carExit = 1;
+		else carEnter = 1;
+		button_count = 0;
+	}
+	return 0;
+}	
 
 /* DESCRIPTION: Simulates the entry and exit of vehicles at the intersection
 * PARAMETER:   none
@@ -489,7 +525,11 @@ void camera_tlc(int* state)
 */
 void handle_vehicle_button(void)
 {
+	if ((KEY_TWO == 1) && (OLD_KEY_TWO == 0)) {
+		button_count++;
+	}
 	
+	OLD_KEY_TWO = KEY_TWO;
 }
 
 // set vehicle_detected to 'no vehicle' state
@@ -517,6 +557,10 @@ int main(void)
 	lcd = fopen(LCD_NAME, "w");
 	lcd_set_mode(0);		// initialize lcd
 	init_buttons_pio();			// initialize buttons
+
+	int conte = 0;
+	void* timerContext = (void*) &conte;
+	alt_alarm_start(&button_timer, 1000, button_timer_isr, timerContext);
 
 	while (1) {
 		// Button detection & debouncing
