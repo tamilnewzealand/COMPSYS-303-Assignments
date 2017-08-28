@@ -86,6 +86,7 @@ static volatile int red_light_flag = 0;
 static volatile int red_light_clear = 0;
 static volatile int timerCount = 0;
 static volatile int timeCountMain = 0;
+static volatile int buttonValue = 1;
 
 
 // Traffic light timeouts
@@ -235,7 +236,6 @@ alt_u32 tlc_timer_isr(void* context)
 */
 void init_buttons_pio(void)
 {
-	int buttonValue = 1;
 	void* context = (void*) &buttonValue;
 
 	// clears the edge capture register
@@ -343,8 +343,8 @@ void NSEW_ped_isr(void* context, alt_u32 id)
 	// clear the edge capture register
 	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(BUTTONS_BASE, 0);
 
-	if (((*temp) & 0x01) > 0) pedestrianNS = 1;
-	if (((*temp) & 0x02) > 0) pedestrianEW = 1;
+	if (((*temp) & 0x02) > 0) pedestrianNS = 1;
+	if (((*temp) & 0x01) > 0) pedestrianEW = 1;
 
 	if (((*temp) & 0x04) > 0) KEY_TWO = 1;
 	else KEY_TWO = 0;
