@@ -284,74 +284,32 @@ void init_buttons_pio(void)
 */
 void pedestrian_tlc(int* state)
 {	
-	if (*state == -1) {
-		// Process initialization state
-		init_tlc();
-		(*state)++;
-		void* timerContext = (void*) &timerCount;
-		alt_alarm_start(&tlc_timer, timeout[(*state)], tlc_timer_isr, timerContext);
-		return;
+	simple_tlc(&state);
+
+	if ((*state == 0) && (pedestrianNS == 1)) pedestrianState = 1;
+	else pedestrianState = 0;
+	
+	if (*state == 2) {
+		pedestrianState = 0;
+		pedestrianNS = 0;
 	}
+	
+	if ((*state == 3) && (pedestrianEW == 1)) pedestrianState = 1;
+	else pedestrianState = 0;
 
-	if (timerCount > 0) {
-		void* timerContext = (void*) &timerCount;
-		alt_alarm_start(&tlc_timer, timeout[(*state)], tlc_timer_isr, timerContext);
-
-		// Increase state number (within bounds) 
-		(*state)++;
-		if (*state == 6) *state = 0;
-
-		if ((*state == 0) && (pedestrianNS == 1)) pedestrianState = 1;
-		else pedestrianState = 0;
-		
-		if (*state == 2) {
-			pedestrianState = 0;
-			pedestrianNS = 0;
-		}
-		
-		if ((*state == 3) && (pedestrianEW == 1)) pedestrianState = 1;
-		else pedestrianState = 0;
-
-		if (*state == 5) {
-			pedestrianState = 0;
-			pedestrianEW = 0;
-		}
-
-		timerCount = 0;
+	if (*state == 5) {
+		pedestrianState = 0;
+		pedestrianEW = 0;
 	}
-
-	//Switch which LED is on based on mode 
-	switch (*state) {
-		case RR0:
-			//LED bit 5 and 2 on (0010 0100)
-			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[0]);//0x24
-			break;
-		case YR:
-			//LED bit 5 and 0 on (0001 0100)
-			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[1]);//0x14
-			break;
-		case GR:
-			//LED bit 5 and 1 on (0000 1100)
-			if (pedestrianState) IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x8C);//0x8C
-			else IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[2]);//0x0C
-			break;
-		case RR1:
-			//LED bit 5 and 2 on (0010 0100)
-			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[3]);//0x24
-			break;
-		case RY:
-			//LED bit 3 and 2 on (0010 0010)
-			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[4]);//0x22
-			break;
-		case RG:
-			//LED bit 4 and 2 on (0010 0001)
-			if (pedestrianState) IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x61);//0x21
-			else IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[5]);//0x21
-			break;
-		default:
-			//All LED off
-			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x00);
-			break;
+	
+	if ((*state) == GR) {
+		if (pedestrianState) IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x8C);//0x8C
+		else IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[2]);//0x0C
+	}
+			
+	if ((*state) == RG) {
+		if (pedestrianState) IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x61);//0x21
+		else IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[5]);//0x21
 	}
 }
 
