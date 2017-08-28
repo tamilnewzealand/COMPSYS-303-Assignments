@@ -34,26 +34,15 @@ void init_tlc(void);
 void simple_tlc(int* state);
 void pedestrian_tlc(int* state);
 void configurable_tlc(int* state);
-int config_tlc(int *tl_state);
 void camera_tlc(int* state);
 
 // Button Inputs / Interrupts
-void buttons_driver(int* button);
 void handle_mode_button();
 void handle_vehicle_button(void);
 void init_buttons_pio(void);
 void NSEW_ped_isr(void* context, alt_u32 id);
 
-// Red light Camera
-void clear_vehicle_detected(void);
-void vehicle_checked(void);
-int is_vehicle_detected(void);
-int is_vehicle_left(void);
-
 // Configuration Functions
-int update_timeout(void);
-void config_isr(void* context, alt_u32 id);
-void buffer_timeout(unsigned int value);
 void timeout_data_handler(void);
 
 
@@ -100,12 +89,6 @@ static volatile int red_light_clear = 0;
 static volatile int timerCount = 0;
 static volatile int timeCountMain = 0;
 
-// 4 States of 'Detection':
-// Car Absent
-// Car Enters
-// Car is Detected running a Red
-// Car Leaves
-static int vehicle_detected = 0;
 
 // Traffic light timeouts
 static unsigned int timeout[TIMEOUT_NUM] = {6000, 500, 2000, 6000, 500, 2000};
@@ -127,6 +110,7 @@ static unsigned int mode = 0;
 static unsigned int newMode = 0;
 // Process states: use -1 as initialization state
 static int proc_state[OPERATION_MODES + 1] = {-1, -1, -1, -1};
+
 
 // Initialize the traffic light controller
 // for any / all modes
@@ -152,21 +136,6 @@ void lcd_set_mode(unsigned int mode)
 	}
 
 }
-
-/* DESCRIPTION: Performs button-press detection and debouncing
-* PARAMETER:   button - referenced argument to indicate the state of the button
-* RETURNS:     none
-*/
-void buttons_driver(int* button)
-{
-	// Persistant state of 'buttons_driver'
-	static int state = 0;
-	
-	*button = 0;	// no assumption is made on intial value of *button
-	// Debounce state machine
-		// call handle_mode_button()
-}
-
 
 /* DESCRIPTION: Updates the ID of the task to be executed and the 7-segment display
 * PARAMETER:   taskid - current task ID
@@ -493,7 +462,7 @@ alt_u32 button_timer_isr(void* context)
 		else carEnter = 1;
 		button_count = 0;
 	}
-	return 0;
+	return 1000;
 }	
 
 /* DESCRIPTION: Simulates the entry and exit of vehicles at the intersection
@@ -509,24 +478,6 @@ void handle_vehicle_button(void)
 	OLD_KEY_TWO = KEY_TWO;
 }
 
-// set vehicle_detected to 'no vehicle' state
-void clear_vehicle_detected(void) 
-{  
-}
-// set vehicle_detected to 'checking' state
-void vehicle_checked(void) 
-{
-}
-// return true or false if a vehicle has been detected
-int is_vehicle_detected(void) 
-{
-}
-// return true or false if the vehicle has left the intersection yet
-int is_vehicle_left(void) 
-{
-}
-
-
 int main(void)
 {	
 	int buttons = 0;			// status of mode button
@@ -540,12 +491,8 @@ int main(void)
 	alt_alarm_start(&button_timer, 1000, button_timer_isr, timerContext);
 
 	while (1) {
-		// Button detection & debouncing
-		
+	
 		handle_mode_button();
-
-		// if Car button pushed...
-			// handle_vehicle_button
 		
 		// Execute the correct TLC
 		switch (mode) {
@@ -562,7 +509,6 @@ int main(void)
 				camera_tlc(&proc_state[3]);
 				break;
 		}
-		// Update Displays
 	}
 	return 1;
 }
