@@ -142,9 +142,7 @@ void lcd_set_mode(unsigned int mode)
 void handle_mode_button()
 {
 	newMode = IORD_ALTERA_AVALON_PIO_DATA(SWITCHES_BASE) & 0x03;
-	printf("Current Mode: %d \n", newMode);
-	printf("Running...\n");
-
+	//printf("Current Mode: %d \n", newMode);
 	if (newMode != mode) {
 		if ((proc_state[mode] == RR0) | (proc_state[mode] == RR1)) {
 			proc_state[mode] = -1;
@@ -182,6 +180,7 @@ void simple_tlc(int* state)
 		timerCount = 0;
 	}
 
+	printf("Current Mode: %d/n", (*state));
 	//Switch which LED is on based on mode 
 	switch (*state) {
 		case RR0:
@@ -210,7 +209,7 @@ void simple_tlc(int* state)
 			break;
 		default:
 			//All LED off
-			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x00);
+			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0xFF);
 			break;
 	}
 }
@@ -254,7 +253,7 @@ void init_buttons_pio(void)
 */
 void pedestrian_tlc(int* state)
 {	
-	simple_tlc(&state);
+	simple_tlc(state);
 
 	if ((*state == 0) && (pedestrianNS == 1)) pedestrianState = 1;
 	else pedestrianState = 0;
@@ -319,7 +318,7 @@ Else run pedestrian_tlc();
 void configurable_tlc(int* state)
 {
 	if (((proc_state[mode] == RR0) | (proc_state[mode] == RR1)) && ((IORD_ALTERA_AVALON_PIO_DATA(SWITCHES_BASE) & 0x04) > 0)) timeout_data_handler();
-	else pedestrian_tlc(&state);
+	else pedestrian_tlc(state);
 }
 
 
@@ -421,7 +420,7 @@ But also handles Red-light camera
 */
 void camera_tlc(int* state)
 {
-	configurable_tlc(&state);
+	configurable_tlc(state);
 	if (((*state) == YR) || ((*state) == RY)) {
 		if ((KEY_TWO == 1) && (OLD_KEY_TWO == 0)) {
 			printf("Camera Activated\n");
