@@ -23,6 +23,7 @@
 // Timer ISRs
 alt_u32 tlc_timer_isr(void* context);
 alt_u32 camera_timer_isr(void* context);
+alt_u32 timer_isr_function(void* context);
 
 //  Misc
 // Others maybe added eg LEDs / UART
@@ -78,6 +79,7 @@ typedef struct  {
 static alt_alarm tlc_timer;		// alarm used for traffic light timing
 static alt_alarm camera_timer;	// alarm used for camera timing
 static alt_alarm button_timer;	// alarm used for camera timing
+static alt_alarm timer;	// alarm used for camera timing
 
 // NOTE:
 // set contexts for ISRs to be volatile to avoid unwanted Compiler optimisation
@@ -96,6 +98,7 @@ static volatile int carExit = 0;
 static volatile int red_light_flag = 0;
 static volatile int red_light_clear = 0;
 static volatile int timerCount = 0;
+static volatile int timeCountMain = 0;
 
 // 4 States of 'Detection':
 // Car Absent
@@ -434,6 +437,13 @@ alt_u32 camera_timer_isr(void* context)
 	return 0;
 }	
 
+alt_32 timer_isr_function(void* context)
+{
+	int *timeCount = (int*) context;
+	(*timeCount)++;
+	return 1000;
+}
+
 /* DESCRIPTION: Camera traffic light controller
 * PARAMETER:   state - state of the controller
 * RETURNS:     none
@@ -452,16 +462,25 @@ void camera_tlc(int* state)
 			red_light_flag = 0;
 			void* timerContext = (void*) &red_light_flag;
 			alt_alarm_start(&camera_timer, CAMERA_TIMEOUT, camera_timer_isr, timerContext);
+
+			timeCountMain = 1;
+			void* timerContext = (void*) &timeCountMain;
+			alt_alarm_start(&timer, 1000, timer_isr_function, timerContext);
+			carEnter = 0;
 		}
 	}
 
 	if (carExit == 1) {
 		red_light_clear = 1;
 		printf("Vehicle Left\n");
+		printf("Time in Intersection: %d sec \n", timeCountMain);
+		alt_alarm_stop(&timer);
 	}
 
 	if ((red_light_flag == 1) && (red_light_clear == 0)) {
 		printf("Snapshot Taken\n");
+		printf("Time in Intersection: %d sec \n", timeCountMain);
+		alt_alarm_stop(&timer);
 	}
 }
 
