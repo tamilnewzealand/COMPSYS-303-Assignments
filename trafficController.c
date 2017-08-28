@@ -38,7 +38,7 @@ void camera_tlc(int* state);
 
 // Button Inputs / Interrupts
 void buttons_driver(int* button);
-void handle_mode_button(unsigned int* taskid);
+void handle_mode_button();
 void handle_vehicle_button(void);
 void init_buttons_pio(void);
 void NSEW_ped_isr(void* context, alt_u32 id);
@@ -161,10 +161,20 @@ void buttons_driver(int* button)
 * PARAMETER:   taskid - current task ID
 * RETURNS:     none
 */
-void handle_mode_button(unsigned int* taskid)
+void handle_mode_button()
 {
-	// Increment mode
-	// Update Mode-display
+	newMode = IORD_ALTERA_AVALON_PIO_DATA(SWITCHES_BASE);
+	printf("Current Mode: %d \n", newMode);
+	printf("Running...\n");
+
+	if (newMode != mode) {
+		if ((proc_state[mode] == RR0) | (proc_state[mode] == RR1)) {
+			proc_state[mode] = -1;
+			mode = newMode;
+			proc_state[mode] = -1;
+			lcd_set_mode(mode);
+		}
+	}
 }
 
 
@@ -503,16 +513,8 @@ int main(void)
 
 	while (1) {
 		// Button detection & debouncing
-		newMode = IORD_ALTERA_AVALON_PIO_DATA(SWITCHES_BASE);
-		printf("Running...\n");
-
-		if (newMode != mode) {
-			if ((proc_state[mode] == RR0) | (proc_state[mode] == RR1)) {
-				proc_state[mode] = -1;
-				mode = newMode;
-				lcd_set_mode(mode);
-			}
-		}
+		
+		handle_mode_button();
 
 		// if Car button pushed...
 			// handle_vehicle_button
