@@ -120,8 +120,8 @@ void init_tlc(void)
 	pedestrianEW = 0;
 	pedestrianNS = 0;
 }
-	
-	
+
+
 /* DESCRIPTION: Writes the mode to the LCD screen
 * PARAMETER:   mode - the current mode
 * RETURNS:     none
@@ -149,6 +149,8 @@ void handle_mode_button()
 			mode = newMode;
 			proc_state[mode] = -1;
 			lcd_set_mode(mode);
+			alt_alarm_stop(&tlc_timer);
+			alt_alarm_stop(&camera_timer);
 		}
 	}
 }
@@ -173,15 +175,14 @@ void simple_tlc(int* state)
 		void* timerContext = (void*) &timerCount;
 		alt_alarm_start(&tlc_timer, timeout[(*state)], tlc_timer_isr, timerContext);
 
-		// Increase state number (within bounds) 
+		// Increase state number (within bounds)
 		(*state)++;
 		if (*state == 6) *state = 0;
 
 		timerCount = 0;
 	}
 
-	printf("Current Mode: %d/n", (*state));
-	//Switch which LED is on based on mode 
+	//Switch which LED is on based on mode
 	switch (*state) {
 		case RR0:
 			//LED bit 5 and 2 on (0010 0100)
@@ -218,7 +219,7 @@ void simple_tlc(int* state)
 /* DESCRIPTION: Handles the traffic light timer interrupt
 * PARAMETER:   context - opaque reference to user data
 * RETURNS:     Number of 'ticks' until the next timer interrupt. A return value
-*              of zero stops the timer. 
+*              of zero stops the timer.
 */
 alt_u32 tlc_timer_isr(void* context)
 {
@@ -252,33 +253,76 @@ void init_buttons_pio(void)
 * RETURNS:     none
 */
 void pedestrian_tlc(int* state)
-{	
-	simple_tlc(state);
+{
+	if (*state == -1) {
+		// Process initialization state
+		init_tlc();
+		(*state)++;
+		void* timerContext = (void*) &timerCount;
+		alt_alarm_start(&tlc_timer, timeout[(*state)], tlc_timer_isr, timerContext);
+		return;
+	}
 
-	if ((*state == 0) && (pedestrianNS == 1)) pedestrianState = 1;
-	else pedestrianState = 0;
-	
-	if (*state == 2) {
-		pedestrianState = 0;
-		pedestrianNS = 0;
-	}
-	
-	if ((*state == 3) && (pedestrianEW == 1)) pedestrianState = 1;
-	else pedestrianState = 0;
+	if (timerCount > 0) {
+		void* timerContext = (void*) &timerCount;
+		alt_alarm_start(&tlc_timer, timeout[(*state)], tlc_timer_isr, timerContext);
 
-	if (*state == 5) {
-		pedestrianState = 0;
-		pedestrianEW = 0;
-	}
+		// Increase state number (within bounds)
+		(*state)++;
+		if (*state == 6) *state = 0;
+
+		printf("Current State: %d\n", (*state));
+		printf("NS: %d, EW: %d, Ped State: %d\n", pedestrianNS, pedestrianEW, pedestrianState);
+		
+		if (((*state) == 0) && (pedestrianNS == 1)) pedestrianState = 1;
 	
-	if ((*state) == GR) {
-		if (pedestrianState) IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x8C);//0x8C
-		else IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[2]);//0x0C
+		if (*state == 2) {
+			pedestrianState = 0;
+			pedestrianNS = 0;
+		}
+	
+		if (((*state) == 3) && (pedestrianEW == 1)) pedestrianState = 1;
+	
+		if (*state == 5) {
+			pedestrianState = 0;
+			pedestrianEW = 0;
+		}
+
+		timerCount = 0;
 	}
-			
-	if ((*state) == RG) {
-		if (pedestrianState) IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x61);//0x21
-		else IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[5]);//0x21
+
+	//Switch which LED is on based on mode
+	switch (*state) {
+		case RR0:
+			//LED bit 5 and 2 on (0010 0100)
+			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[0]);//0x24
+			break;
+		case YR:
+			//LED bit 5 and 0 on (0001 0100)
+			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[1]);//0x14
+			break;
+		case GR:
+			//LED bit 5 and 1 on (0000 1100)
+			if (pedestrianState == 0) IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[2]);//0x0C
+			else IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x8C);//0x8C
+			break;
+		case RR1:
+			//LED bit 5 and 2 on (0010 0100)
+			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[3]);//0x24
+			break;
+		case RY:
+			//LED bit 3 and 2 on (0010 0010)
+			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[4]);//0x22
+			break;
+		case RG:
+			//LED bit 4 and 2 on (0010 0001)
+			if (pedestrianState == 0) IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, traffic_lights[5]);//0x21
+			else IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x61);//0x61
+			break;
+		default:
+			//All LED off
+			IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0xFF);
+			break;
 	}
 }
 
@@ -352,17 +396,17 @@ void timeout_data_handler(void)
 			{
 				buffered_values[j] = (payload[i] - 48);
 				i--;
-	
+
 				if (payload[i] != 44)
 				{
 					buffered_values[j] = buffered_values[j] + ((payload[i] - 48) * 10);
 					i--;
-	
+
 					if (payload[i] != 44)
 					{
 						buffered_values[j] = buffered_values[j] + ((payload[i] - 48) * 100);
 						i--;
-	
+
 						if (payload[i] != 44)
 						{
 							buffered_values[j] = buffered_values[j] + ((payload[i] - 48) * 1000);
@@ -388,20 +432,20 @@ void timeout_data_handler(void)
 	for (i = 0; i < 6; i++) {
 		timeout[i] = buffered_values[i];
 	}
-	
+
 }
 
 /* DESCRIPTION: Handles the red light camera timer interrupt
 * PARAMETER:   context - opaque reference to user data
 * RETURNS:     Number of 'ticks' until the next timer interrupt. A return value
-*              of zero stops the timer. 
+*              of zero stops the timer.
 */
 alt_u32 camera_timer_isr(void* context)
 {
 	volatile int* trigger = (volatile int*)context;
 	*trigger = 1;
 	return 0;
-}	
+}
 
 alt_u32 timer_isr_function(void* context)
 {
@@ -455,17 +499,17 @@ void camera_tlc(int* state)
 }
 
 int main(void)
-{	
+{
 	int buttons = 0;			// status of mode button
-	
+
 	lcd = fopen(LCD_NAME, "w");
 	lcd_set_mode(0);		// initialize lcd
 	init_buttons_pio();			// initialize buttons
 
 	while (1) {
-	
+
 		handle_mode_button();
-		
+
 		// Execute the correct TLC
 		switch (mode) {
 			case 0:
