@@ -67,7 +67,6 @@ typedef struct  {
 // GLOBAL VARIABLES
 static alt_alarm tlc_timer;		// alarm used for traffic light timing
 static alt_alarm camera_timer;	// alarm used for camera timing
-static alt_alarm button_timer;	// alarm used for camera timing
 static alt_alarm timer;	// alarm used for camera timing
 
 // NOTE:
@@ -82,8 +81,7 @@ static volatile int pedestrianState = 0;
 static volatile int KEY_TWO = 0;
 static volatile int OLD_KEY_TWO = 0;
 static volatile int button_count = 0;
-static volatile int carEnter = 0;
-static volatile int carExit = 0;
+static volatile int carInside = 0;
 static volatile int red_light_flag = 0;
 static volatile int red_light_clear = 0;
 static volatile int timerCount = 0;
@@ -425,7 +423,7 @@ void camera_tlc(int* state)
 {
 	configurable_tlc(&state);
 	if (((*state) == YR) || ((*state) == RY)) {
-		if (carEnter == 1) {
+		if ((KEY_TWO == 1) && (OLD_KEY_TWO == 0)) {
 			printf("Camera Activated\n");
 			red_light_clear = 0;
 			red_light_flag = 0;
@@ -433,17 +431,19 @@ void camera_tlc(int* state)
 			alt_alarm_start(&camera_timer, CAMERA_TIMEOUT, camera_timer_isr, timerContext);
 
 			timeCountMain = 1;
-			timerContext = (void*) &timeCountMain;
-			alt_alarm_start(&timer, 1000, timer_isr_function, timerContext);
-			carEnter = 0;
+			void* timerContextMain = (void*) &timeCountMain;
+			alt_alarm_start(&timer, 1000, timer_isr_function, timerContextMain);
+			carInside = 1;
 		}
 	}
 
-	if (carExit == 1) {
-		red_light_clear = 1;
-		printf("Vehicle Left\n");
-		printf("Time in Intersection: %d sec \n", timeCountMain);
-		alt_alarm_stop(&timer);
+	if (carInside == 1) {
+		if ((KEY_TWO == 1) && (OLD_KEY_TWO == 0)) {
+			red_light_clear = 1;
+			printf("Vehicle Left\n");
+			printf("Time in Intersection: %d sec \n", timeCountMain);
+			alt_alarm_stop(&timer);
+		}
 	}
 
 	if ((red_light_flag == 1) && (red_light_clear == 0)) {
@@ -451,30 +451,7 @@ void camera_tlc(int* state)
 		printf("Time in Intersection: %d sec \n", timeCountMain);
 		alt_alarm_stop(&timer);
 	}
-}
 
-alt_u32 button_timer_isr(void* context)
-{
-	if (button_count > 0) {
-		carEnter = 0;
-		carExit = 0;
-		if ((button_count & 1) == 0) carExit = 1;
-		else carEnter = 1;
-		button_count = 0;
-	}
-	return 1000;
-}	
-
-/* DESCRIPTION: Simulates the entry and exit of vehicles at the intersection
-* PARAMETER:   none
-* RETURNS:     none
-*/
-void handle_vehicle_button(void)
-{
-	if ((KEY_TWO == 1) && (OLD_KEY_TWO == 0)) {
-		button_count++;
-	}
-	
 	OLD_KEY_TWO = KEY_TWO;
 }
 
@@ -485,10 +462,6 @@ int main(void)
 	lcd = fopen(LCD_NAME, "w");
 	lcd_set_mode(0);		// initialize lcd
 	init_buttons_pio();			// initialize buttons
-
-	int conte = 0;
-	void* timerContext = (void*) &conte;
-	alt_alarm_start(&button_timer, 1000, button_timer_isr, timerContext);
 
 	while (1) {
 	
