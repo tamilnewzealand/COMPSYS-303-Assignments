@@ -163,7 +163,7 @@ void buttons_driver(int* button)
 */
 void handle_mode_button()
 {
-	newMode = IORD_ALTERA_AVALON_PIO_DATA(SWITCHES_BASE);
+	newMode = IORD_ALTERA_AVALON_PIO_DATA(SWITCHES_BASE) & 0x03;
 	printf("Current Mode: %d \n", newMode);
 	printf("Running...\n");
 
@@ -378,36 +378,9 @@ If there is new configuration data... Load it.
 Else run pedestrian_tlc();
 */
 void configurable_tlc(int* state)
-{	
-	if (*state == -1) {
-		// Process initialization state
-		return;
-	}
-	
-	
-}
-
-
-/* DESCRIPTION: Implements the state machine of the traffic light controller in 
-*              the ***configuration*** phase
-* PARAMETER:   tl_state - state of the traffic light
-* RETURNS:     Returns the state of the configuration phase
-*/
-/*
-Puts the TLC in a 'safe' state... then begins update
-*/
-int config_tlc(int* tl_state)
 {
-	// State of configuration
-	static int state = 0;
-	
-	if (*tl_state == -1) {
-		// Process initialization state
-		state = 0;
-		return 0;
-	}
-	
-	return state;
+	if (((proc_state[mode] == RR0) | (proc_state[mode] == RR1)) && ((IORD_ALTERA_AVALON_PIO_DATA(SWITCHES_BASE) & 0x04) > 0)) timeout_data_handler();
+	else pedestrian_tlc(&state);
 }
 
 
