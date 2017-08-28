@@ -415,34 +415,68 @@ int config_tlc(int* tl_state)
 * PARAMETER:   none
 * RETURNS:     none
 */
-/*
-buffer_timeout() must be used 'for atomic transfer to the main timeout buffer'
-*/
 void timeout_data_handler(void)
 {
+	int payload[31];
+	int buffered_values[6];
+	int i = 0;
+	int j = 5;
+
+	FILE* up = fopen(UART_NAME, "r");
+
+	if (up != NULL)
+	{
+		while (payload[i-1] != 13)
+		{
+			payload[i] = fgetc(up);
+			i++;
+		}
+		payload[i-1] = '\0';
+		i = i - 2;
+
+		while (i > 0)
+		{
+			if (payload[i] == 0) i--;
+			if (payload[i] != 44)
+			{
+				buffered_values[j] = (payload[i] - 48);
+				i--;
 	
-}
-
-
-/* DESCRIPTION: Stores the new timeout values in a secondary buffer for atomic 
-*              transfer to the main timeout buffer at a later stage
-* PARAMETER:   value - value to store in the buffer
-* RETURNS:     none
-*/
-void buffer_timeout(unsigned int value)
-{
+				if (payload[i] != 44)
+				{
+					buffered_values[j] = buffered_values[j] + ((payload[i] - 48) * 10);
+					i--;
 	
-}
+					if (payload[i] != 44)
+					{
+						buffered_values[j] = buffered_values[j] + ((payload[i] - 48) * 100);
+						i--;
+	
+						if (payload[i] != 44)
+						{
+							buffered_values[j] = buffered_values[j] + ((payload[i] - 48) * 1000);
+							i--;
+						}
+					}
+				}
+				j--;
+			}
+			else
+			{
+				i--;
+			}
+		}
+		fclose(up);
+	}
 
+	for (i = 0; i < 6; i++) {
+		if (buffered_values[i] > 0) continue;
+		else return;
+	}
 
-/* DESCRIPTION: Implements the update operation of timeout values as a critical 
-*              section by ensuring that timeouts are fully received before 
-*              allowing the update
-* PARAMETER:   none
-* RETURNS:     1 if update is completed; 0 otherwise
-*/
-int update_timeout(void)
-{
+	for (i = 0; i < 6, i++) {
+		timeout[i] = buffered_values[i];
+	}
 	
 }
 
