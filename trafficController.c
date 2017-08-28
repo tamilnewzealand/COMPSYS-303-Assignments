@@ -388,7 +388,7 @@ void timeout_data_handler(void)
 		else return;
 	}
 
-	for (i = 0; i < 6, i++) {
+	for (i = 0; i < 6; i++) {
 		timeout[i] = buffered_values[i];
 	}
 	
@@ -406,7 +406,7 @@ alt_u32 camera_timer_isr(void* context)
 	return 0;
 }	
 
-alt_32 timer_isr_function(void* context)
+alt_u32 timer_isr_function(void* context)
 {
 	int *timeCount = (int*) context;
 	(*timeCount)++;
@@ -433,7 +433,7 @@ void camera_tlc(int* state)
 			alt_alarm_start(&camera_timer, CAMERA_TIMEOUT, camera_timer_isr, timerContext);
 
 			timeCountMain = 1;
-			void* timerContext = (void*) &timeCountMain;
+			timerContext = (void*) &timeCountMain;
 			alt_alarm_start(&timer, 1000, timer_isr_function, timerContext);
 			carEnter = 0;
 		}
@@ -458,7 +458,7 @@ alt_u32 button_timer_isr(void* context)
 	if (button_count > 0) {
 		carEnter = 0;
 		carExit = 0;
-		if ((x & 1) == 0) carExit = 1;
+		if ((button_count & 1) == 0) carExit = 1;
 		else carEnter = 1;
 		button_count = 0;
 	}
