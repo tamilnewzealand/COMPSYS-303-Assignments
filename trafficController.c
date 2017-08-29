@@ -144,7 +144,9 @@ void handle_mode_button()
 {
 	newMode = IORD_ALTERA_AVALON_PIO_DATA(SWITCHES_BASE) & 0x03;
 	//printf("Current Mode: %d \n", newMode);
+	//Check if mode was changed
 	if (newMode != mode) {
+		//Change mode only if in a safe state (i.e. in a R-R situation) and re-initialize them
 		if ((proc_state[mode] == RR0) | (proc_state[mode] == RR1)) {
 			proc_state[mode] = -1;
 			mode = newMode;
@@ -371,6 +373,7 @@ Else run pedestrian_tlc();
 */
 void configurable_tlc(int* state)
 {
+	//Only reconfigure when in a safe state (i.e. R-R) and if the switch is used
 	if (((proc_state[mode] == RR0) || (proc_state[mode] == RR1)) && ((IORD_ALTERA_AVALON_PIO_DATA(SWITCHES_BASE) & 0x04) > 0)) timeout_data_handler();
 	else pedestrian_tlc(state);
 }
@@ -389,6 +392,7 @@ void timeout_data_handler(void)
 
 	if (up != NULL)
 	{
+		//store the data into payload and only store numbers or commas (ASCII values 44 and 48 to 57)
 		while (payload[i-1] != 10)
 		{
 			payload[i] = fgetc(up);
@@ -407,21 +411,25 @@ void timeout_data_handler(void)
 			if (payload[i] == 10) i--;
 			if (payload[i] != 44)
 			{
+				//Store the unit
 				buffered_values[j] = (payload[i] - 48);
 				i--;
 
 				if (payload[i] != 44)
 				{
+					//Store the tens (if any)
 					buffered_values[j] = buffered_values[j] + ((payload[i] - 48) * 10);
 					i--;
 
 					if (payload[i] != 44)
 					{
+						//Store the hundreds (if any)
 						buffered_values[j] = buffered_values[j] + ((payload[i] - 48) * 100);
 						i--;
 
 						if (payload[i] != 44)
 						{
+							//Store the thousands (if any)
 							buffered_values[j] = buffered_values[j] + ((payload[i] - 48) * 1000);
 							i--;
 						}
@@ -509,7 +517,7 @@ int main(void)
 	lcd = fopen(LCD_NAME, "w");
 	up = fopen(UART_NAME, "w+");
 
-	lcd_set_mode(0);		// initialize lcd
+	lcd_set_mode(0);			// initialize lcd
 	init_buttons_pio();			// initialize buttons
 
 	while (1) {
@@ -518,15 +526,19 @@ int main(void)
 
 		// Execute the correct TLC
 		switch (mode) {
+			//Mode 1
 			case 0:
 				simple_tlc(&proc_state[0]);
 				break;
+			//Mode 2
 			case 1:
 				pedestrian_tlc(&proc_state[1]);
 				break;
+			//Mode 3
 			case 2:
 				configurable_tlc(&proc_state[2]);
 				break;
+			//Mode 4
 			case 3:
 				camera_tlc(&proc_state[3]);
 				break;
