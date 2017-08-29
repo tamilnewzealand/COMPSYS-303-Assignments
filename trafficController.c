@@ -397,7 +397,7 @@ void timeout_data_handler(void)
 		{
 			payload[i] = fgetc(up);
 			if (payload[i] > 57) continue;
-			if (payload[i] < 44) continue;
+			if ((payload[i] < 44) && (payload[i] != 10)) continue;
 			if (payload[i] == 45) continue;
 			if (payload[i] == 46) continue;
 			if (payload[i] == 47) continue;
