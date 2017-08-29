@@ -93,7 +93,7 @@ static unsigned int timeout[TIMEOUT_NUM] = {6000, 500, 2000, 6000, 500, 2000};
 static TimeBuf timeout_buf = { -1, {500, 6000, 2000, 500, 6000, 2000} };
 
 // UART
-FILE* fp;
+FILE* up;
 FILE* lcd;
 
 // Traffic light LED values
@@ -379,8 +379,6 @@ void timeout_data_handler(void)
 	int i = 0;
 	int j = 5;
 
-	FILE* up = fopen(UART_NAME, "r");
-
 	if (up != NULL)
 	{
 		while (payload[i-1] != 10)
@@ -428,7 +426,6 @@ void timeout_data_handler(void)
 				i--;
 			}
 		}
-		fclose(up);
 		printf("%d", buffered_values[0]);
 	}
 
@@ -470,7 +467,7 @@ void camera_tlc(int* state)
 	configurable_tlc(state);
 	if (((*state) == YR) || ((*state) == RY)) {
 		if (carEnter == 1) {
-			fprintf(fp, "Camera Activated\n");
+			fprintf(up, "Camera Activated\n");
 			red_light_flag = 0;
 			void* timerContext = (void*) &red_light_flag;
 			alt_alarm_start(&camera_timer, CAMERA_TIMEOUT, camera_timer_isr, timerContext);
@@ -484,15 +481,15 @@ void camera_tlc(int* state)
 	if (carEnter == 1) {
 		if (carExit == 1) {
 			carEnter = 0;
-			fprintf(fp, "Vehicle Left\n");
-			fprintf(fp, "Time in Intersection: %d sec \n", timeCountMain);
+			fprintf(up, "Vehicle Left\n");
+			fprintf(up, "Time in Intersection: %d sec \n", timeCountMain);
 			alt_alarm_stop(&timer);
 		}
 	}
 
 	if ((red_light_flag == 1) && (carEnter == 1)) {
-		fprintf(fp, "Snapshot Taken\n");
-		fprintf(fp, "Time in Intersection: %d sec \n", timeCountMain);
+		fprintf(up, "Snapshot Taken\n");
+		fprintf(up, "Time in Intersection: %d sec \n", timeCountMain);
 		alt_alarm_stop(&timer);
 	}
 }
@@ -502,12 +499,16 @@ int main(void)
 	int buttons = 0;			// status of mode button
 
 	lcd = fopen(LCD_NAME, "w");
+	up = fopen(UART_NAME, "w+");
+
 	lcd_set_mode(0);		// initialize lcd
 	init_buttons_pio();			// initialize buttons
 
 	while (1) {
 
 		handle_mode_button();
+
+		fprintf(up, "Working... \n");
 
 		// Execute the correct TLC
 		switch (mode) {
@@ -525,5 +526,8 @@ int main(void)
 				break;
 		}
 	}
+
+	fclose(up);
+	fclose(lcd);
 	return 1;
 }
