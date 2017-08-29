@@ -86,6 +86,7 @@ static volatile int red_light_clear = 0;
 static volatile int timerCount = 0;
 static volatile int timeCountMain = 0;
 static volatile int buttonValue = 1;
+static volatile int NSWEFlag = 0;
 
 
 // Traffic light timeouts
@@ -273,15 +274,15 @@ void pedestrian_tlc(int* state)
 		if (((*state) == 0) && (pedestrianNS == 1)) pedestrianState = 1;
 
 		if (*state == 2) {
-			pedestrianState = 0;
-			pedestrianNS = 0;
+			if (pedestrianState == 1) pedestrianNS = 0;
+			pedestrianState = 0;		
 		}
 
 		if (((*state) == 3) && (pedestrianEW == 1)) pedestrianState = 1;
 
 		if (*state == 5) {
+			if (pedestrianState == 1) pedestrianEW = 0;
 			pedestrianState = 0;
-			pedestrianEW = 0;
 		}
 
 		timerCount = 0;
@@ -343,13 +344,20 @@ void NSEW_ped_isr(void* context, alt_u32 id)
 	if (((*temp) & 0x01) > 0) pedestrianEW = 1;
 
 	if (((*temp) & 0x04) > 0) {
-		if (carEnter == 0) {
-			carEnter = 1;
-			carExit = 0;
-		} else {
-			carExit = 1;
+		if (NSWEFlag == 0) {
+			if (carEnter == 0) {
+				carEnter = 1;
+				carExit = 0;
+			} else {
+				carExit = 1;
+			}
 		}
+		NSWEFlag = 1;
+	} else {
+		NSWEFlag = 0;
 	}
+
+	
 }
 
 
@@ -485,12 +493,12 @@ void camera_tlc(int* state)
 			fprintf(up, "Time in Intersection: %d sec \n", timeCountMain);
 			alt_alarm_stop(&timer);
 		}
-	}
-
-	if ((red_light_flag == 1) && (carEnter == 1)) {
-		fprintf(up, "Snapshot Taken\n");
-		fprintf(up, "Time in Intersection: %d sec \n", timeCountMain);
-		alt_alarm_stop(&timer);
+		
+		if (red_light_flag == 1) {
+			fprintf(up, "Snapshot Taken\n");
+			fprintf(up, "Time in Intersection: %d sec \n", timeCountMain);
+			alt_alarm_stop(&timer);
+		}
 	}
 }
 
@@ -507,8 +515,6 @@ int main(void)
 	while (1) {
 
 		handle_mode_button();
-
-		fprintf(up, "Working... \n");
 
 		// Execute the correct TLC
 		switch (mode) {
