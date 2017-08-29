@@ -363,7 +363,7 @@ Else run pedestrian_tlc();
 */
 void configurable_tlc(int* state)
 {
-	if (((proc_state[mode] == RR0) | (proc_state[mode] == RR1)) && ((IORD_ALTERA_AVALON_PIO_DATA(SWITCHES_BASE) & 0x04) > 0)) timeout_data_handler();
+	if (((proc_state[mode] == RR0) || (proc_state[mode] == RR1)) && ((IORD_ALTERA_AVALON_PIO_DATA(SWITCHES_BASE) & 0x04) > 0)) timeout_data_handler();
 	else pedestrian_tlc(state);
 }
 
