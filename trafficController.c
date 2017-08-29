@@ -386,6 +386,11 @@ void timeout_data_handler(void)
 		while (payload[i-1] != 10)
 		{
 			payload[i] = fgetc(up);
+			if (payload[i] > 57) continue;
+			if (payload[i] < 44) continue;
+			if (payload[i] == 45) continue;
+			if (payload[i] == 46) continue;
+			if (payload[i] == 47) continue;
 			printf("%u", payload[i]);
 			i++;
 		}
@@ -425,11 +430,6 @@ void timeout_data_handler(void)
 		}
 		fclose(up);
 		printf("%d", buffered_values[0]);
-	}
-
-	for (i = 0; i < 6; i++) {
-		if (buffered_values[i] > 0) continue;
-		else return;
 	}
 
 	for (i = 0; i < 6; i++) {
