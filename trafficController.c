@@ -78,10 +78,9 @@ static volatile int pedestrianEW = 0;
 static volatile int pedestrianNSstate = 0;
 static volatile int pedestrianESstate = 0;
 static volatile int pedestrianState = 0;
-static volatile int KEY_TWO = 0;
-static volatile int OLD_KEY_TWO = 0;
 static volatile int button_count = 0;
-static volatile int carInside = 0;
+static volatile int carEnter = 0;
+static volatile int carExit = 0;
 static volatile int red_light_flag = 0;
 static volatile int red_light_clear = 0;
 static volatile int timerCount = 0;
@@ -343,8 +342,14 @@ void NSEW_ped_isr(void* context, alt_u32 id)
 	if (((*temp) & 0x02) > 0) pedestrianNS = 1;
 	if (((*temp) & 0x01) > 0) pedestrianEW = 1;
 
-	if (((*temp) & 0x04) > 0) KEY_TWO = 1;
-	else KEY_TWO = 0;
+	if (((*temp) & 0x04) > 0) {
+		if (carEnter == 0) {
+			carEnter = 1;
+			carExit = 0;
+		} else {
+			carExit = 1;
+		}
+	}
 }
 
 
@@ -464,36 +469,32 @@ void camera_tlc(int* state)
 {
 	configurable_tlc(state);
 	if (((*state) == YR) || ((*state) == RY)) {
-		if ((KEY_TWO == 1) && (OLD_KEY_TWO == 0)) {
-			printf("Camera Activated\n");
-			red_light_clear = 0;
+		if (carEnter == 1) {
+			fprintf(fp, "Camera Activated\n");
 			red_light_flag = 0;
 			void* timerContext = (void*) &red_light_flag;
 			alt_alarm_start(&camera_timer, CAMERA_TIMEOUT, camera_timer_isr, timerContext);
 
-			timeCountMain = 1;
+			timeCountMain = 0;
 			void* timerContextMain = (void*) &timeCountMain;
 			alt_alarm_start(&timer, 1000, timer_isr_function, timerContextMain);
-			carInside = 1;
 		}
 	}
 
-	if (carInside == 1) {
-		if ((KEY_TWO == 1) && (OLD_KEY_TWO == 0)) {
-			red_light_clear = 1;
-			printf("Vehicle Left\n");
-			printf("Time in Intersection: %d sec \n", timeCountMain);
+	if (carEnter == 1) {
+		if (carExit == 1) {
+			carEnter = 0;
+			fprintf(fp, "Vehicle Left\n");
+			fprintf(fp, "Time in Intersection: %d sec \n", timeCountMain);
 			alt_alarm_stop(&timer);
 		}
 	}
 
-	if ((red_light_flag == 1) && (red_light_clear == 0)) {
-		printf("Snapshot Taken\n");
-		printf("Time in Intersection: %d sec \n", timeCountMain);
+	if ((red_light_flag == 1) && (carEnter == 1)) {
+		fprintf(fp, "Snapshot Taken\n");
+		fprintf(fp, "Time in Intersection: %d sec \n", timeCountMain);
 		alt_alarm_stop(&timer);
 	}
-
-	OLD_KEY_TWO = KEY_TWO;
 }
 
 int main(void)
