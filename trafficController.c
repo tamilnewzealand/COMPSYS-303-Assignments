@@ -497,15 +497,17 @@ void camera_tlc(int* state)
 	if (carEnter == 1) {
 		if (carExit == 1) {
 			carEnter = 0;
-			fprintf(up, "Vehicle Left\n");
-			fprintf(up, "Time in Intersection: %d sec \n", timeCountMain);
-			alt_alarm_stop(&timer);
-		}
-		
-		if (red_light_flag == 1) {
-			fprintf(up, "Snapshot Taken\n");
-			fprintf(up, "Time in Intersection: %d sec \n", timeCountMain);
-			alt_alarm_stop(&timer);
+			if (red_light_flag == 1) {
+				fprintf(up, "Snapshot Taken\n");
+				fprintf(up, "Time in Intersection: %d sec \n", timeCountMain);
+				alt_alarm_stop(&timer);
+			}
+			else
+			{
+				fprintf(up, "Vehicle Left\n");
+				fprintf(up, "Time in Intersection: %d sec \n", timeCountMain);
+				alt_alarm_stop(&timer);
+			}
 		}
 	}
 }
