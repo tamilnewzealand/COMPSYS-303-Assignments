@@ -271,18 +271,15 @@ void pedestrian_tlc(int* state)
 		(*state)++;
 		if (*state == 6) *state = 0;
 
-		printf("Current State: %d\n", (*state));
-		printf("NS: %d, EW: %d, Ped State: %d\n", pedestrianNS, pedestrianEW, pedestrianState);
-		
 		if (((*state) == 0) && (pedestrianNS == 1)) pedestrianState = 1;
-	
+
 		if (*state == 2) {
 			pedestrianState = 0;
 			pedestrianNS = 0;
 		}
-	
+
 		if (((*state) == 3) && (pedestrianEW == 1)) pedestrianState = 1;
-	
+
 		if (*state == 5) {
 			pedestrianState = 0;
 			pedestrianEW = 0;
@@ -372,7 +369,7 @@ void configurable_tlc(int* state)
 */
 void timeout_data_handler(void)
 {
-	int payload[31];
+	int payload[32];
 	int buffered_values[6];
 	int i = 0;
 	int j = 5;
@@ -381,17 +378,17 @@ void timeout_data_handler(void)
 
 	if (up != NULL)
 	{
-		while (payload[i-1] != 13)
+		while (payload[i-1] != 10)
 		{
 			payload[i] = fgetc(up);
+			printf("%u", payload[i]);
 			i++;
 		}
-		payload[i-1] = '\0';
 		i = i - 2;
 
-		while (i > 0)
+		while (i >= 0)
 		{
-			if (payload[i] == 0) i--;
+			if (payload[i] == 10) i--;
 			if (payload[i] != 44)
 			{
 				buffered_values[j] = (payload[i] - 48);
@@ -422,6 +419,7 @@ void timeout_data_handler(void)
 			}
 		}
 		fclose(up);
+		printf("%d", buffered_values[0]);
 	}
 
 	for (i = 0; i < 6; i++) {
