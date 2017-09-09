@@ -1,14 +1,16 @@
 scchart DDDPacemaker {
-	input signal ASense, VSense, AVITO, PVARPTO, VRPTO, LRITO;
+	input signal ASense, VSense, AVITO, PVARPTO, VRPTO, AEITO, LRITO, URITO;
 	output signal APace, VPace;
 	
 	initial state top{
-		signal AVI_start, AVI_stop, AVI_ex;
+	  	signal AVI_start, AVI_stop, AVI_ex;
 	  	signal PVARP_start, PVARP_stop, PVARP_ex;
 		signal VRP_start, VRP_stop, VRP_ex;
+		signal AEI_start, AEI_stop, AEI_ex;
 	  	signal LRI_start, LRI_stop, LRI_ex;
-
-		region AVI_timer:
+	  	signal URI_start, URI_stop, URI_ex;	 
+	  	
+	  	region AVI_timer:
 		initial state idle --> timer with AVI_start;
 		state timer "timer"	 --> idle with AVI_stop
 		--> idle with AVITO/ AVI_ex;
@@ -46,6 +48,21 @@ scchart DDDPacemaker {
 		state waitVRP --> idle with VRP_ex
 					  --> commit2 with VSense;
 		connector state commit2 --> waitVRP immediate;
+		
+		region AEI_timer:
+		initial state idle --> timer with AEI_start;
+		state timer "timer"	 --> idle with AEI_stop
+		--> idle with AEITO/ AEI_ex;
+		
+		region AEI:
+		initial state init --> commit1 with VSense;
+		connector state commit1 --> waitAEI immediate with / AEI_start;
+		state waitAEI "waitAEI"--> commit2 with ASense
+							   --> commit2 with APace
+		                	   --> commit3 with AEI_ex;
+		connector state commit2 --> intState immediate with / AEI_stop;
+		connector state commit3 --> intState immediate with / APace;
+		state intState --> waitAEI with / AVI_start; 
 		
 		region LRI_timer:
 		initial state idle --> timer with LRI_start;
