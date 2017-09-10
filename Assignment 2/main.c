@@ -45,7 +45,48 @@ void buttons_isr(void* context, alt_u32 id)
 
 int main()
 {
- 	printf("Hello from Nios II!\n");
+	mode = 0;
+	reset();
 
+	while(1)
+	{
+		tick();
+
+		// reseting inputs
+		VSense = 0;
+		ASense = 0;
+
+		// Buffering outputs
+		if (APace == 1)
+		{
+			LEDAPace = APace;
+			LEDBufferCountA = LED_BUFFER;
+		}
+
+		if (VPace == 1)
+		{
+			LEDVPace = VPace;
+			LEDBufferCountV = LED_BUFFER;
+		}
+
+		LEDBufferCountA--;
+		LEDBufferCountV--;
+
+		if (LEDBufferCountA == 0) LEDAPace = 0;
+		if (LEDBufferCountV == 0) LEDVPace = 0;
+
+		// Outputing buffered values to LEDs
+		if (LEDVPace == 1)
+		{
+			if (LEDAPace == 1) IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x03);
+			else IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x01);
+		}
+		else
+		{
+			if (LEDAPace == 1) IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x02);
+			else IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x00);
+		}
+	
+	}
 	return 0;
 }
