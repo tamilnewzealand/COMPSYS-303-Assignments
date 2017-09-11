@@ -15,6 +15,22 @@ void tick();
 // Inputs
 extern char ASense;
 extern char VSense;
+
+extern char AVIStart;
+extern char PVARPStart;
+extern char VRPStart;
+extern char AEIStart;
+extern char LRIStart;
+extern char URIStart;
+
+extern char AVIStop;
+extern char PVARPStop;
+extern char VRPStop;
+extern char AEIStop;
+extern char LRIStop;
+extern char URIStop;
+
+// Outputs
 extern char AVITO;
 extern char PVARPTO;
 extern char VRPTO;

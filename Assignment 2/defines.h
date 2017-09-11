@@ -19,7 +19,6 @@
 #define URI_VALUE 900
 #define LED_BUFFER 500
 
-static unsigned int mode;
 static volatile unsigned int oldKEY1;
 static volatile unsigned int oldKEY2;
 
@@ -27,6 +26,20 @@ static unsigned int LEDVPace;
 static unsigned int LEDAPace;
 static unsigned int LEDBufferCountA;
 static unsigned int LEDBufferCountV;
+
+alt_u32 avi_timer_isr(void* context);
+alt_u32 aei_timer_isr(void* context);
+alt_u32 pvarp_timer_isr(void* context);
+alt_u32 vrp_timer_isr(void* context);
+alt_u32 lri_timer_isr(void* context);
+alt_u32 uri_timer_isr(void* context);
+
+static alt_alarm timer_AVI;
+static alt_alarm timer_AEI;
+static alt_alarm timer_PVARP;
+static alt_alarm timer_VRP;
+static alt_alarm timer_LRI;
+static alt_alarm timer_URI;
 
 void init_buttons_pio();
 void buttons_isr(void* context, alt_u32 id);
