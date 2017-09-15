@@ -9,6 +9,11 @@
 #define DEFINES_H_
 
 #include <stdio.h>
+#include <system.h>
+#include <sys/alt_alarm.h>
+#include <altera_avalon_pio_regs.h>
+#include <alt_types.h>
+#include <sys/alt_irq.h>
 
 // Example timeout values in milliseconds
 #define AVI_VALUE 300
@@ -21,6 +26,8 @@
 
 static volatile unsigned int oldKEY1;
 static volatile unsigned int oldKEY2;
+
+static volatile int recv_char;
 
 static unsigned int LEDVPace;
 static unsigned int LEDAPace;
@@ -43,6 +50,8 @@ static alt_alarm timer_URI;
 
 void init_buttons_pio();
 void buttons_isr(void* context, alt_u32 id);
+void init_uart();
+void uart_RecvBufferIsr(void *context, alt_u32 id);
 int main();
 
 #endif /* DEFINES_H_ */

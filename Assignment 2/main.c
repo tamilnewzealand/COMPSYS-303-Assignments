@@ -40,7 +40,7 @@ alt_u32 uri_timer_isr(void* context)
 
 void init_buttons_pio()
 {
-	void* context = (void*) &buttonValue;
+	void* context = NULL;
 
 	// clears the edge capture register
 	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(BUTTONS_BASE, 0);
@@ -64,7 +64,7 @@ void buttons_isr(void* context, alt_u32 id)
 		oldKEY1 = 1;
 	}
 	else oldKEY1 = 0;
-	
+
 	if (((*temp) & 0x01) > 0)
 	{
 		if (oldKEY2 == 0) VSense = 1;
@@ -73,8 +73,32 @@ void buttons_isr(void* context, alt_u32 id)
 	else oldKEY2 = 0;
 }
 
+void init_uart()
+{
+	void* context = NULL;
+
+	// register the ISR
+	alt_irq_register(UART_IRQ, context, uart_RecvBufferIsr);
+}
+
+void uart_RecvBufferIsr(void *context, alt_u32 id)
+{
+	recv_char = IORD_ALTERA_AVALON_UART_RXDATA(UART_BASE);
+	if (recv_char == 'A') {
+		ASense = 1;
+		printf("A \n");
+	}
+	if (recv_char == 'V') {
+		VSense = 1;
+		printf("V \n");
+	}
+}
+
 int main()
 {
+	mode = 0;
+	init_buttons_pio();
+	init_uart();
 	reset();
 
 	while(1)
@@ -128,7 +152,7 @@ int main()
 		if (LEDBufferCountA == 0) LEDAPace = 0;
 		if (LEDBufferCountV == 0) LEDVPace = 0;
 
-		// Outputing buffered values to LEDs
+		// Outputting buffered values to LEDs
 		if (LEDVPace == 1)
 		{
 			if (LEDAPace == 1) IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x03);
@@ -139,7 +163,8 @@ int main()
 			if (LEDAPace == 1) IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x02);
 			else IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x00);
 		}
-	
+
 	}
 	return 0;
 }
+
