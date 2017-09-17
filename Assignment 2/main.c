@@ -11,31 +11,37 @@
 alt_u32 avi_timer_isr(void* context)
 {
 	AVITO = 1;
+	return 0;
 }
 
 alt_u32 aei_timer_isr(void* context)
 {
 	AEITO = 1;
+	return 0;
 }
 
 alt_u32 pvarp_timer_isr(void* context)
 {
 	PVARPTO = 1;
+	return 0;
 }
 
 alt_u32 vrp_timer_isr(void* context)
 {
 	VRPTO = 1;
+	return 0;
 }
 
 alt_u32 lri_timer_isr(void* context)
 {
 	LRITO = 1;
+	return 0;
 }
 
 alt_u32 uri_timer_isr(void* context)
 {
 	URITO = 1;
+	return 0;
 }
 
 void init_buttons_pio()
@@ -96,7 +102,6 @@ void uart_RecvBufferIsr(void *context, alt_u32 id)
 
 int main()
 {
-	mode = 0;
 	init_buttons_pio();
 	init_uart();
 	reset();
@@ -105,21 +110,21 @@ int main()
 	{
 		tick();
 
-		// Starts the timers if event occured
-		if (AVIStart == 1) alt_alarm_start(&avi_timer, AVI_VALUE, avi_timer_isr, NULL);
-		if (AEIStart == 1) alt_alarm_start(&aei_timer, AEI_VALUE, aei_timer_isr, NULL);
-		if (PVARPStart == 1) alt_alarm_start(&pvarp_timer, PVARP_VALUE, pvarp_timer_isr, NULL);
-		if (VRPStart == 1) alt_alarm_start(&vrp_timer, VRP_VALUE, vrp_timer_isr, NULL);
-		if (LRIStart == 1) alt_alarm_start(&lri_timer, LRI_VALUE, lri_timer_isr, NULL);
-		if (URIStart == 1) alt_alarm_start(&uri_timer, URI_VALUE, uri_timer_isr, NULL);
+		// Starts the timers if event occurred
+		if (AVI_start == 1) alt_alarm_start(&timer_AVI, AVI_VALUE, avi_timer_isr, NULL);
+		if (AEI_start == 1) alt_alarm_start(&timer_AEI, AEI_VALUE, aei_timer_isr, NULL);
+		if (PVARP_start == 1) alt_alarm_start(&timer_PVARP, PVARP_VALUE, pvarp_timer_isr, NULL);
+		if (VRP_start == 1) alt_alarm_start(&timer_VRP, VRP_VALUE, vrp_timer_isr, NULL);
+		if (LRI_start == 1) alt_alarm_start(&timer_LRI, LRI_VALUE, lri_timer_isr, NULL);
+		if (URI_start == 1) alt_alarm_start(&timer_URI, URI_VALUE, uri_timer_isr, NULL);
 		
-		// Stops the timers if event occured
-		if (AVIStop == 1) alt_alarm_stop(&avi_timer);
-		if (AEIStop == 1) alt_alarm_stop(&aei_timer);
-		if (PVARPStop == 1) alt_alarm_stop(&pvarp_timer);
-		if (VRPStop == 1) alt_alarm_stop(&vrp_timer);
-		if (LRIStop == 1) alt_alarm_stop(&lri_timer);
-		if (URIStop == 1) alt_alarm_stop(&uri_timer);
+		// Stops the timers if event occurred
+		if (AVI_stop == 1) alt_alarm_stop(&timer_AVI);
+		if (AEI_stop == 1) alt_alarm_stop(&timer_AEI);
+		if (PVARP_stop == 1) alt_alarm_stop(&timer_PVARP);
+		if (VRP_stop == 1) alt_alarm_stop(&timer_VRP);
+		if (LRI_stop == 1) alt_alarm_stop(&timer_LRI);
+		if (URI_stop == 1) alt_alarm_stop(&timer_URI);
 
 		// reseting inputs
 		VSense = 0;

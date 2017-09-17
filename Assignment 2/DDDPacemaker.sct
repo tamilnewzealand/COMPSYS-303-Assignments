@@ -1,14 +1,11 @@
 scchart DDDPacemaker {
 	input signal ASense, VSense, AVITO, PVARPTO, VRPTO, AEITO, LRITO, URITO;
 	output signal APace, VPace;
+	signal AVI_start, PVARP_start, VRP_start, AEI_start, LRI_start, URI_start;
+	signal AVI_stop, PVARP_stop, VRP_stop, AEI_stop, LRI_stop, URI_stop;
 	
 	initial state top{
-	  	signal AVI_start, AVI_stop, AVI_ex;
-	  	signal PVARP_start, PVARP_stop, PVARP_ex;
-		signal VRP_start, VRP_stop, VRP_ex;
-		signal AEI_start, AEI_stop, AEI_ex;
-	  	signal LRI_start, LRI_stop, LRI_ex;
-	  	signal URI_start, URI_stop, URI_ex;	 
+	  	signal AVI_ex, PVARP_ex, VRP_ex, AEI_ex, LRI_ex, URI_ex;
 	  	
 	  	region AVI_timer:
 		initial state idle --> timer with AVI_start;

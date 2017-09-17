@@ -13,6 +13,8 @@
 /*****************************************************************************/
 char URITO;
 char VPace;
+char URI_start;
+char URI_stop;
 char ASense;
 char VSense;
 char AVITO;
@@ -21,24 +23,22 @@ char VRPTO;
 char AEITO;
 char LRITO;
 char APace;
+char AVI_start;
+char PVARP_start;
+char VRP_start;
+char AEI_start;
+char LRI_start;
+char AVI_stop;
+char PVARP_stop;
+char VRP_stop;
+char AEI_stop;
+char LRI_stop;
+char _DDDPacemaker_local_URI_ex;
 char _DDDPacemaker_local_AVI_ex;
 char _DDDPacemaker_local_PVARP_ex;
 char _DDDPacemaker_local_VRP_ex;
 char _DDDPacemaker_local_AEI_ex;
-char _DDDPacemaker_local_LRI_stop;
-char _DDDPacemaker_local_URI_stop;
-char _DDDPacemaker_local_AVI_start;
-char _DDDPacemaker_local_AVI_stop;
-char _DDDPacemaker_local_PVARP_start;
-char _DDDPacemaker_local_PVARP_stop;
-char _DDDPacemaker_local_VRP_start;
-char _DDDPacemaker_local_VRP_stop;
-char _DDDPacemaker_local_AEI_start;
-char _DDDPacemaker_local_AEI_stop;
-char _DDDPacemaker_local_LRI_start;
 char _DDDPacemaker_local_LRI_ex;
-char _DDDPacemaker_local_URI_start;
-char _DDDPacemaker_local_URI_ex;
 char g0;
 char g1;
 char g2;
@@ -278,45 +278,66 @@ void tick(){
       g0 = _GO;
       g1 = g0;
       g2 = g1;
-      g98 = g1;
-      g100 =(PRE_g99);
-      g99 =(g98||g100);
-      if(g99){
-         _DDDPacemaker_local_AVI_start = 0;
-         _DDDPacemaker_local_AVI_stop = 0;
-         _DDDPacemaker_local_AVI_ex = 0;
-         _DDDPacemaker_local_PVARP_start = 0;
-         _DDDPacemaker_local_PVARP_stop = 0;
-         _DDDPacemaker_local_PVARP_ex = 0;
-         _DDDPacemaker_local_VRP_start = 0;
-         _DDDPacemaker_local_VRP_stop = 0;
-         _DDDPacemaker_local_VRP_ex = 0;
-         _DDDPacemaker_local_AEI_start = 0;
-         _DDDPacemaker_local_AEI_stop = 0;
-         _DDDPacemaker_local_AEI_ex = 0;
-         _DDDPacemaker_local_LRI_start = 0;
-         _DDDPacemaker_local_LRI_ex = 0;
-         _DDDPacemaker_local_LRI_stop = 0;
-         _DDDPacemaker_local_URI_start = 0;
-         _DDDPacemaker_local_URI_ex = 0;
-         _DDDPacemaker_local_URI_stop = 0;
-      }
       g103 = g0;
       g105 =(PRE_g104);
       g104 =(g103||g105);
       if(g104){
          APace = 0;
          VPace = 0;
+         AVI_start = 0;
+         PVARP_start = 0;
+         VRP_start = 0;
+         AEI_start = 0;
+         LRI_start = 0;
+         URI_start = 0;
+         AVI_stop = 0;
+         PVARP_stop = 0;
+         VRP_stop = 0;
+         AEI_stop = 0;
+         LRI_stop = 0;
+         URI_stop = 0;
+      }
+      g12 =(PRE_g11);
+      _cg12 = ASense;
+      g13 =(g12&&_cg12);
+      if(g13){
+         AVI_start =(AVI_start||1);
+      }
+      g18 =(PRE_g17);
+      g18b = g18;
+      if(g18b){
+         AVI_start =(AVI_start||1);
+      }
+      g71 =(PRE_g70);
+      g71b = g71;
+      if(g71b){
+         AVI_start =(AVI_start||1);
+      }
+      g4 =(PRE_g3);
+      g4b = g4;
+      _cg4 = AVI_start;
+      g15 =(PRE_g14);
+      _cg15 = VSense;
+      g100 =(PRE_g99);
+      g98 = g1;
+      g99 =(g100||g98);
+      if(g99){
+         _DDDPacemaker_local_AVI_ex = 0;
+         _DDDPacemaker_local_PVARP_ex = 0;
+         _DDDPacemaker_local_VRP_ex = 0;
+         _DDDPacemaker_local_AEI_ex = 0;
+         _DDDPacemaker_local_LRI_ex = 0;
+         _DDDPacemaker_local_URI_ex = 0;
       }
       g91 =(PRE_g90);
       _cg91 = VSense;
       g92 =(g91&&_cg91);
       if(g92){
-         _DDDPacemaker_local_LRI_stop =(_DDDPacemaker_local_LRI_stop||1);
+         LRI_stop =(LRI_stop||1);
       }
       g80 =(PRE_g79);
       g80b = g80;
-      _cg80 = _DDDPacemaker_local_LRI_stop;
+      _cg80 = LRI_stop;
       g81 =(g80b&&(!(_cg80)));
       _cg81 = LRITO;
       g82 =(g81&&_cg81);
@@ -329,73 +350,52 @@ void tick(){
       if(g96){
          VPace =(VPace||1);
       }
-      g15 =(PRE_g14);
-      _cg15 = VSense;
       g19 =(g15&&(!(_cg15)));
       _cg19 = VPace;
-      g16 =((g19&&_cg19)||(g15&&_cg15));
+      g16 =((g15&&_cg15)||(g19&&_cg19));
       if(g16){
-         _DDDPacemaker_local_AVI_stop =(_DDDPacemaker_local_AVI_stop||1);
+         AVI_stop =(AVI_stop||1);
       }
       g6 =(PRE_g5);
       g6b = g6;
-      _cg6 = _DDDPacemaker_local_AVI_stop;
+      _cg6 = AVI_stop;
       g7 =(g6b&&(!(_cg6)));
       _cg7 = AVITO;
       g8 =(g7&&_cg7);
       if(g8){
          _DDDPacemaker_local_AVI_ex =(_DDDPacemaker_local_AVI_ex||1);
       }
-      g12 =(PRE_g11);
-      _cg12 = ASense;
-      g13 =(g12&&_cg12);
-      if(g13){
-         _DDDPacemaker_local_AVI_start =(_DDDPacemaker_local_AVI_start||1);
-      }
-      g18 =(PRE_g17);
-      g18b = g18;
-      if(g18b){
-         _DDDPacemaker_local_AVI_start =(_DDDPacemaker_local_AVI_start||1);
-      }
-      g71 =(PRE_g70);
-      g71b = g71;
-      if(g71b){
-         _DDDPacemaker_local_AVI_start =(_DDDPacemaker_local_AVI_start||1);
-      }
-      g4 =(PRE_g3);
-      g4b = g4;
-      _cg4 = _DDDPacemaker_local_AVI_start;
-      g3 =(g2||g8||(g6b&&_cg6)||(g4b&&(!(_cg4))));
-      g5 =((g7&&(!(_cg7)))||(g4b&&_cg4));
+      g3 =((g4b&&(!(_cg4)))||(g6b&&_cg6)||g2||g8);
+      g5 =((g4b&&_cg4)||(g7&&(!(_cg7))));
       g10 = g1;
       g11 =((g12&&(!(_cg12)))||g10);
       g20 =(g19&&(!(_cg19)));
       _cg20 = _DDDPacemaker_local_AVI_ex;
-      g14 =(g13||g18b||(g20&&(!(_cg20))));
+      g14 =(g13||(g20&&(!(_cg20)))||g18b);
       g21 =(g20&&_cg20);
       if(g21){
          VPace =(VPace||1);
       }
-      g17 =(g16||g21);
+      g17 =(g21||g16);
       g23 = g1;
-      g27 =(PRE_g26);
-      _cg27 = PVARPTO;
-      g28 =(g27&&_cg27);
-      if(g28){
-         _DDDPacemaker_local_PVARP_ex =(_DDDPacemaker_local_PVARP_ex||1);
-      }
       g32 =(PRE_g31);
       _cg32 = VSense;
       g37 =(g32&&(!(_cg32)));
       _cg37 = VPace;
       g33 =((g32&&_cg32)||(g37&&_cg37));
       if(g33){
-         _DDDPacemaker_local_PVARP_start =(_DDDPacemaker_local_PVARP_start||1);
+         PVARP_start =(PVARP_start||1);
       }
       g25 =(PRE_g24);
       g25b = g25;
-      _cg25 = _DDDPacemaker_local_PVARP_start;
-      g24 =(g23||g28||(g25b&&(!(_cg25))));
+      _cg25 = PVARP_start;
+      g27 =(PRE_g26);
+      _cg27 = PVARPTO;
+      g28 =(g27&&_cg27);
+      if(g28){
+         _DDDPacemaker_local_PVARP_ex =(_DDDPacemaker_local_PVARP_ex||1);
+      }
+      g24 =(g23||(g25b&&(!(_cg25)))||g28);
       g26 =((g25b&&_cg25)||(g27&&(!(_cg27))));
       g30 = g1;
       g35 =(PRE_g34);
@@ -404,7 +404,7 @@ void tick(){
       g31 =(g30||(g35b&&_cg35)||(g37&&(!(_cg37))));
       g36 =(g35b&&(!(_cg35)));
       _cg36 = ASense;
-      g34 =((g36&&_cg36)||g33||(g36&&_cg36));
+      g34 =((g36&&_cg36)||(g36&&_cg36)||g33);
       g39 = g1;
       g43 =(PRE_g42);
       _cg43 = VRPTO;
@@ -418,55 +418,55 @@ void tick(){
       _cg53 = VPace;
       g49 =((g48&&_cg48)||(g53&&_cg53));
       if(g49){
-         _DDDPacemaker_local_VRP_start =(_DDDPacemaker_local_VRP_start||1);
+         VRP_start =(VRP_start||1);
       }
       g41 =(PRE_g40);
       g41b = g41;
-      _cg41 = _DDDPacemaker_local_VRP_start;
+      _cg41 = VRP_start;
       g40 =(g39||g44||(g41b&&(!(_cg41))));
-      g42 =((g41b&&_cg41)||(g43&&(!(_cg43))));
+      g42 =((g43&&(!(_cg43)))||(g41b&&_cg41));
       g46 = g1;
       g51 =(PRE_g50);
       g51b = g51;
       _cg51 = _DDDPacemaker_local_VRP_ex;
-      g47 =(g46||(g51b&&_cg51)||(g53&&(!(_cg53))));
+      g47 =((g51b&&_cg51)||g46||(g53&&(!(_cg53))));
       g52 =(g51b&&(!(_cg51)));
       _cg52 = VSense;
       g50 =((g52&&_cg52)||g49||(g52&&_cg52));
       g55 = g1;
+      g65 =(PRE_g64);
+      _cg65 = VSense;
+      g66 =(g65&&_cg65);
+      if(g66){
+         AEI_start =(AEI_start||1);
+      }
+      g57 =(PRE_g56);
+      g57b = g57;
+      _cg57 = AEI_start;
       g68 =(PRE_g67);
       _cg68 = ASense;
       g72 =(g68&&(!(_cg68)));
       _cg72 = APace;
-      g69 =((g68&&_cg68)||(g72&&_cg72));
+      g69 =((g72&&_cg72)||(g68&&_cg68));
       if(g69){
-         _DDDPacemaker_local_AEI_stop =(_DDDPacemaker_local_AEI_stop||1);
+         AEI_stop =(AEI_stop||1);
       }
       g59 =(PRE_g58);
       g59b = g59;
-      _cg59 = _DDDPacemaker_local_AEI_stop;
+      _cg59 = AEI_stop;
       g60 =(g59b&&(!(_cg59)));
       _cg60 = AEITO;
       g61 =(g60&&_cg60);
       if(g61){
          _DDDPacemaker_local_AEI_ex =(_DDDPacemaker_local_AEI_ex||1);
       }
-      g65 =(PRE_g64);
-      _cg65 = VSense;
-      g66 =(g65&&_cg65);
-      if(g66){
-         _DDDPacemaker_local_AEI_start =(_DDDPacemaker_local_AEI_start||1);
-      }
-      g57 =(PRE_g56);
-      g57b = g57;
-      _cg57 = _DDDPacemaker_local_AEI_start;
-      g56 =(g61||g55||(g57b&&(!(_cg57)))||(g59b&&_cg59));
-      g58 =((g60&&(!(_cg60)))||(g57b&&_cg57));
+      g56 =((g57b&&(!(_cg57)))||(g59b&&_cg59)||g61||g55);
+      g58 =((g57b&&_cg57)||(g60&&(!(_cg60))));
       g63 = g1;
       g64 =((g65&&(!(_cg65)))||g63);
       g73 =(g72&&(!(_cg72)));
       _cg73 = _DDDPacemaker_local_AEI_ex;
-      g67 =((g73&&(!(_cg73)))||g66||g71b);
+      g67 =(g66||(g73&&(!(_cg73)))||g71b);
       g74 =(g73&&_cg73);
       if(g74){
          APace =(APace||1);
@@ -477,24 +477,24 @@ void tick(){
       _cg86 = VSense;
       g87 =(g86&&_cg86);
       if(g87){
-         _DDDPacemaker_local_LRI_start =(_DDDPacemaker_local_LRI_start||1);
+         LRI_start =(LRI_start||1);
       }
       g94 =(PRE_g93);
       g94b = g94;
       if(g94b){
-         _DDDPacemaker_local_LRI_start =(_DDDPacemaker_local_LRI_start||1);
+         LRI_start =(LRI_start||1);
       }
       g78 =(PRE_g77);
       g78b = g78;
-      _cg78 = _DDDPacemaker_local_LRI_start;
-      g77 =(g76||(g80b&&_cg80)||g82||(g78b&&(!(_cg78))));
-      g79 =((g78b&&_cg78)||(g81&&(!(_cg81))));
+      _cg78 = LRI_start;
+      g77 =(g76||g82||(g78b&&(!(_cg78)))||(g80b&&_cg80));
+      g79 =((g81&&(!(_cg81)))||(g78b&&_cg78));
       g84 = g1;
       g85 =((g86&&(!(_cg86)))||g84);
       g89 =(PRE_g88);
       g89b = g89;
       _cg89 = _DDDPacemaker_local_VRP_ex;
-      g88 =(g87||g94b||(g89b&&(!(_cg89))));
+      g88 =(g94b||(g89b&&(!(_cg89)))||g87);
       g90 =((g89b&&_cg89)||(g95&&(!(_cg95))));
       g93 =(g96||g92);
       g9_e1 =(!((g4||g6)));
@@ -511,8 +511,8 @@ void tick(){
       g102_fix0 =((g9_e1||g9)&&(g22_e2||g22)&&(g29_e3||g29)&&(g38_e4||g38));
       g102_fix1 =(g102_fix0&&(g45_e5||g45)&&(g54_e6||g54)&&(g62_e7||g62));
       g102_fix2 =(g9||g22||g29||g38);
-      g102_e1_fix =(g78||g86||g6||g27||g43||g59||g80||g15||g35||g51||g68||g89||g91||g18||g71||g94);
-      g102_e1 =(!((g4||g12||g25||g32||g41||g48||g57||g65||g100||g102_e1_fix)));
+      g102_e1_fix =(g78||g86||g6||g27||g43||g59||g80||g15||g35||g51||g68||g89||g91||g18||g71||g100);
+      g102_e1 =(!((g4||g12||g25||g32||g41||g48||g57||g65||g94||g102_e1_fix)));
       g106_e2 =(!(g105));
    }
    PRE_g3 = g3;
