@@ -19,8 +19,9 @@ scchart DDDPacemaker {
 							   --> commit2 with VPace
 		                	   --> waitURI with AVI_ex;
 		connector state commit2 --> waitPVARP immediate with / AVI_stop; 
-		state waitPVARP --> intState with PVARPTO;
-		state waitURI --> intState with URI_ex / VPace;
+		state waitPVARP --> intState with PVARP_ex;
+		state waitURI --> commit3 with URI_ex;
+		connector state commit3 --> intState immediate with / VPace;
 		state intState --> waitAVI with / AVI_start; 
 	  	
 		region PVARP_timer:
@@ -32,8 +33,7 @@ scchart DDDPacemaker {
 		 				   --> commit1 with VPace;
 		connector state commit1 --> waitPVARP immediate with / PVARP_start;
 		state waitPVARP --> idle with PVARP_ex
-		 			    --> commit2 with ASense;
-		connector state commit2 --> waitPVARP immediate;
+		 			    --> waitPVARP with ASense;
 		
 	  	region VRP_timer:
 		initial state idle --> timer with VRP_start;
@@ -44,24 +44,23 @@ scchart DDDPacemaker {
 						   --> commit1 with VPace;
 		connector state commit1 --> waitVRP immediate with / VRP_start;
 		state waitVRP --> idle with VRP_ex
-					  --> commit2 with VSense;
-		connector state commit2 --> waitVRP immediate;
+					  --> waitVRP with VSense;
 		
 		region AEI_timer:
 		initial state idle --> timer with AEI_start;
 		state timer "timer"	 --> idle with AEI_stop
-		--> idle with AEITO/ AEI_ex;
+		--> idle with AEITO/ AEI_ex;	
 		
 		region AEI:
 		initial state init --> commit1 with VSense;
-		connector state commit1 --> waitPVARP immediate with / AEI_start;
-		state waitPVARP "waitPVARP" --> waitAEI with PVARP_ex;
+		connector state commit1 --> waitAEI immediate with / AEI_start;
 		state waitAEI "waitAEI"--> commit2 with ASense
 							   --> commit2 with APace
 		                	   --> commit3 with AEI_ex;
-		connector state commit2 --> intState immediate with / AEI_stop;
+		connector state commit2 --> waitVRP immediate with / AEI_stop; 
+		state waitVRP --> intState with VRP_ex;
 		connector state commit3 --> intState immediate with / APace;
-		state intState --> waitAEI with / AVI_start; 
+		state intState --> waitAEI with / AEI_start; 
 		
 		region LRI_timer:
 		initial state idle --> timer with LRI_start;
@@ -84,14 +83,10 @@ scchart DDDPacemaker {
 		--> idle with URITO/ URI_ex;
 		
 		region URI:
-		initial state init --> commit1 with VSense;
-		connector state commit1 --> waitVRP immediate with / URI_start;
-		state waitVRP --> waitURI with VRP_ex;
-		state waitURI "waitURI"--> commit2 with VSense
-		                	   --> commit3 with URI_ex;
-		connector state commit2 --> intState immediate with / URI_stop;
-		connector state commit3 --> intState immediate with / VPace;
-		state intState --> waitVRP with /URI_start;
+		initial state init --> commit1 with VSense
+						   --> commit1 with VPace;
+		connector state commit1 --> waitURI immediate with / URI_start;
+		state waitURI "waitURI" --> init with URI_ex;
 	};
 }
 
