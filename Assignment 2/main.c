@@ -35,7 +35,6 @@ alt_u32 vrp_timer_isr(void* context)
 alt_u32 lri_timer_isr(void* context)
 {
 	LRITO = 1;
-	printf("\nLRI Timed out");
 	return 0;
 }
 
@@ -157,30 +156,30 @@ void reset_inputs()
 void show_leds()
 {
 	// Buffering outputs
-	if (APace == 1)
+	if (APace > 0)
 	{
-		fprintf(fp, "A");
+		fprintf(fp, "\nA");
 		LEDAPace = 1;
 		alt_alarm_stop(&timer_leda);
 		alt_alarm_start(&timer_leda, LED_BUFFER, leda_timer_isr, NULL);
 	}
 
-	if (VPace == 1)
+	if (VPace > 0)
 	{
-		fprintf(fp, "V");
+		fprintf(fp, "\nV");
 		LEDVPace = 1;
 		alt_alarm_stop(&timer_ledv);
 		alt_alarm_start(&timer_ledv, LED_BUFFER, ledv_timer_isr, NULL);
 	}
 
-	if (LEDVPace == 1)
+	if (LEDVPace > 0)
 	{
-		if (LEDAPace == 1) IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x03);
+		if (LEDAPace > 0) IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x03);
 		else IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x01);
 	}
 	else
 	{
-		if (LEDAPace == 1) IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x02);
+		if (LEDAPace > 0) IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x02);
 		else IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x00);
 	}
 }
@@ -191,7 +190,6 @@ int main()
 	up = open(UART_NAME, O_RDWR | O_NONBLOCK);
 	fp = fopen(UART_NAME, "w+");
 	reset();
-	VSense = 1;
 
 	while(1)
 	{
