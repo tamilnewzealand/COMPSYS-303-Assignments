@@ -333,20 +333,9 @@ void tick(){
       g0 = _GO;
       g1 = g0;
       g2 = g1;
-      g120 = g1;
-      g122 =(PRE_g121);
-      g121 =(g120||g122);
-      if(g121){
-         _DDDPacemaker_local_AVI_ex = 0;
-         _DDDPacemaker_local_PVARP_ex = 0;
-         _DDDPacemaker_local_VRP_ex = 0;
-         _DDDPacemaker_local_AEI_ex = 0;
-         _DDDPacemaker_local_LRI_ex = 0;
-         _DDDPacemaker_local_URI_ex = 0;
-      }
-      g125 = g0;
       g127 =(PRE_g126);
-      g126 =(g125||g127);
+      g125 = g0;
+      g126 =(g127||g125);
       if(g126){
          APace = 0;
          VPace = 0;
@@ -362,6 +351,17 @@ void tick(){
          AEI_stop = 0;
          LRI_stop = 0;
          URI_stop = 0;
+      }
+      g120 = g1;
+      g122 =(PRE_g121);
+      g121 =(g120||g122);
+      if(g121){
+         _DDDPacemaker_local_AVI_ex = 0;
+         _DDDPacemaker_local_PVARP_ex = 0;
+         _DDDPacemaker_local_VRP_ex = 0;
+         _DDDPacemaker_local_AEI_ex = 0;
+         _DDDPacemaker_local_LRI_ex = 0;
+         _DDDPacemaker_local_URI_ex = 0;
       }
       g97 =(PRE_g96);
       _cg97 = VSense;
@@ -395,12 +395,6 @@ void tick(){
       g6 =(PRE_g5);
       g6b = g6;
       _cg6 = AVI_stop;
-      g7 =(g6b&&(!(_cg6)));
-      _cg7 = AVITO;
-      g8 =(g7&&_cg7);
-      if(g8){
-         _DDDPacemaker_local_AVI_ex =(_DDDPacemaker_local_AVI_ex||1);
-      }
       g12 =(PRE_g11);
       _cg12 = ASense;
       g13 =(g12&&_cg12);
@@ -415,13 +409,19 @@ void tick(){
       g4 =(PRE_g3);
       g4b = g4;
       _cg4 = AVI_start;
-      g3 =(g8||(g4b&&(!(_cg4)))||g2||(g6b&&_cg6));
+      g7 =(g6b&&(!(_cg6)));
+      _cg7 = AVITO;
+      g8 =(g7&&_cg7);
+      if(g8){
+         _DDDPacemaker_local_AVI_ex =(_DDDPacemaker_local_AVI_ex||1);
+      }
+      g3 =(g2||(g6b&&_cg6)||(g4b&&(!(_cg4)))||g8);
       g5 =((g7&&(!(_cg7)))||(g4b&&_cg4));
       g10 = g1;
-      g11 =((g12&&(!(_cg12)))||g10);
+      g11 =(g10||(g12&&(!(_cg12))));
       g22 =(g21&&(!(_cg21)));
       _cg22 = _DDDPacemaker_local_AVI_ex;
-      g14 =(g20b||g13||(g22&&(!(_cg22))));
+      g14 =(g13||g20b||(g22&&(!(_cg22))));
       g31 =(PRE_g30);
       _cg31 = PVARPTO;
       g32 =(g31&&_cg31);
@@ -431,7 +431,7 @@ void tick(){
       g18 =(PRE_g17);
       g18b = g18;
       _cg18 = _DDDPacemaker_local_PVARP_ex;
-      g17 =((g18b&&(!(_cg18)))||g16);
+      g17 =(g16||(g18b&&(!(_cg18))));
       g108 =(PRE_g107);
       g108b = g108;
       _cg108 = URI_stop;
@@ -448,14 +448,14 @@ void tick(){
       if(g25){
          VPace =(VPace||1);
       }
-      g19 =((g18b&&_cg18)||g25);
-      g23 =((g22&&_cg22)||(g24b&&(!(_cg24))));
+      g19 =(g25||(g18b&&_cg18));
+      g23 =((g24b&&(!(_cg24)))||(g22&&_cg22));
       g27 = g1;
       g36 =(PRE_g35);
       _cg36 = VSense;
       g41 =(g36&&(!(_cg36)));
       _cg41 = VPace;
-      g37 =((g41&&_cg41)||(g36&&_cg36));
+      g37 =((g36&&_cg36)||(g41&&_cg41));
       if(g37){
          PVARP_start =(PVARP_start||1);
       }
@@ -468,44 +468,44 @@ void tick(){
       g39 =(PRE_g38);
       g39b = g39;
       _cg39 = _DDDPacemaker_local_PVARP_ex;
-      g35 =(g34||(g41&&(!(_cg41)))||(g39b&&_cg39));
+      g35 =((g41&&(!(_cg41)))||g34||(g39b&&_cg39));
       g40 =(g39b&&(!(_cg39)));
       _cg40 = ASense;
       g38 =(g37||(g40&&_cg40)||(g40&&_cg40));
       g43 = g1;
-      g47 =(PRE_g46);
-      _cg47 = VRPTO;
-      g48 =(g47&&_cg47);
-      if(g48){
-         _DDDPacemaker_local_VRP_ex =(_DDDPacemaker_local_VRP_ex||1);
-      }
       g52 =(PRE_g51);
       _cg52 = VSense;
       g57 =(g52&&(!(_cg52)));
       _cg57 = VPace;
-      g53 =((g52&&_cg52)||(g57&&_cg57));
+      g53 =((g57&&_cg57)||(g52&&_cg52));
       if(g53){
          VRP_start =(VRP_start||1);
       }
       g45 =(PRE_g44);
       g45b = g45;
       _cg45 = VRP_start;
-      g44 =(g43||g48||(g45b&&(!(_cg45))));
+      g47 =(PRE_g46);
+      _cg47 = VRPTO;
+      g48 =(g47&&_cg47);
+      if(g48){
+         _DDDPacemaker_local_VRP_ex =(_DDDPacemaker_local_VRP_ex||1);
+      }
+      g44 =(g43||(g45b&&(!(_cg45)))||g48);
       g46 =((g45b&&_cg45)||(g47&&(!(_cg47))));
       g50 = g1;
       g55 =(PRE_g54);
       g55b = g55;
       _cg55 = _DDDPacemaker_local_VRP_ex;
-      g51 =((g57&&(!(_cg57)))||(g55b&&_cg55)||g50);
+      g51 =((g57&&(!(_cg57)))||g50||(g55b&&_cg55));
       g56 =(g55b&&(!(_cg55)));
       _cg56 = VSense;
-      g54 =(g53||(g56&&_cg56)||(g56&&_cg56));
+      g54 =((g56&&_cg56)||g53||(g56&&_cg56));
       g59 = g1;
       g72 =(PRE_g71);
       _cg72 = ASense;
       g78 =(g72&&(!(_cg72)));
       _cg78 = APace;
-      g73 =((g78&&_cg78)||(g72&&_cg72));
+      g73 =((g72&&_cg72)||(g78&&_cg78));
       if(g73){
          AEI_stop =(AEI_stop||1);
       }
@@ -532,22 +532,22 @@ void tick(){
       g61 =(PRE_g60);
       g61b = g61;
       _cg61 = AEI_start;
-      g60 =(g59||g65||(g63b&&_cg63)||(g61b&&(!(_cg61))));
+      g60 =(g65||(g61b&&(!(_cg61)))||g59||(g63b&&_cg63));
       g62 =((g61b&&_cg61)||(g64&&(!(_cg64))));
       g67 = g1;
       g68 =(g67||(g69&&(!(_cg69))));
       g79 =(g78&&(!(_cg78)));
       _cg79 = _DDDPacemaker_local_AEI_ex;
-      g71 =(g77b||(g79&&(!(_cg79)))||g70);
+      g71 =(g77b||g70||(g79&&(!(_cg79))));
       g75 =(PRE_g74);
       g75b = g75;
       _cg75 = _DDDPacemaker_local_VRP_ex;
-      g74 =(g73||(g75b&&(!(_cg75))));
+      g74 =((g75b&&(!(_cg75)))||g73);
       g80 =(g79&&_cg79);
       if(g80){
          APace =(APace||1);
       }
-      g76 =(g80||(g75b&&_cg75));
+      g76 =((g75b&&_cg75)||g80);
       g82 = g1;
       g92 =(PRE_g91);
       _cg92 = VSense;
@@ -563,14 +563,14 @@ void tick(){
       g84 =(PRE_g83);
       g84b = g84;
       _cg84 = LRI_start;
-      g83 =(g82||g88||(g84b&&(!(_cg84)))||(g86b&&_cg86));
+      g83 =((g84b&&(!(_cg84)))||(g86b&&_cg86)||g82||g88);
       g85 =((g84b&&_cg84)||(g87&&(!(_cg87))));
       g90 = g1;
-      g91 =((g92&&(!(_cg92)))||g90);
+      g91 =(g90||(g92&&(!(_cg92))));
       g95 =(PRE_g94);
       g95b = g95;
       _cg95 = _DDDPacemaker_local_VRP_ex;
-      g94 =((g95b&&(!(_cg95)))||g93||g100b);
+      g94 =(g93||(g95b&&(!(_cg95)))||g100b);
       g96 =((g95b&&_cg95)||(g101&&(!(_cg101))));
       g99 =(g98||g102);
       g104 = g1;
@@ -585,13 +585,13 @@ void tick(){
       g106 =(PRE_g105);
       g106b = g106;
       _cg106 = URI_start;
-      g105 =(g110||(g106b&&(!(_cg106)))||g104||(g108b&&_cg108));
-      g107 =((g106b&&_cg106)||(g109&&(!(_cg109))));
+      g105 =(g110||g104||(g106b&&(!(_cg106)))||(g108b&&_cg108));
+      g107 =((g109&&(!(_cg109)))||(g106b&&_cg106));
       g112 = g1;
       g117 =(PRE_g116);
       g117b = g117;
       _cg117 = _DDDPacemaker_local_URI_ex;
-      g113 =((g118&&(!(_cg118)))||(g117b&&_cg117)||g112);
+      g113 =(g112||(g117b&&_cg117)||(g118&&(!(_cg118))));
       g116 =(g115||(g117b&&(!(_cg117))));
       g9_e1 =(!((g4||g6)));
       g26_e2 =(!((g12||g15||g18||g24||g20)));
