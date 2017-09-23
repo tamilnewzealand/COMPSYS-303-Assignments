@@ -11,36 +11,48 @@
 alt_u32 avi_timer_isr(void* context)
 {
 	AVITO = 1;
+	alt_alarm_start(&timer_AVITO, SIGNAL_BUFFER, avito_timer_isr, NULL);
+	printf("\nAVI Timed out");
 	return 0;
 }
 
 alt_u32 aei_timer_isr(void* context)
 {
 	AEITO = 1;
+	alt_alarm_start(&timer_AEITO, SIGNAL_BUFFER, aeito_timer_isr, NULL);
+	printf("\nAEI Timed out");
 	return 0;
 }
 
 alt_u32 pvarp_timer_isr(void* context)
 {
 	PVARPTO = 1;
+	alt_alarm_start(&timer_PVARPTO, SIGNAL_BUFFER, pvarpto_timer_isr, NULL);
+	printf("\nPVARP Timed out");
 	return 0;
 }
 
 alt_u32 vrp_timer_isr(void* context)
 {
 	VRPTO = 1;
+	alt_alarm_start(&timer_VRPTO, SIGNAL_BUFFER, vrpto_timer_isr, NULL);
+	printf("\nVRP Timed out");
 	return 0;
 }
 
 alt_u32 lri_timer_isr(void* context)
 {
 	LRITO = 1;
+	alt_alarm_start(&timer_LRITO, SIGNAL_BUFFER, lrito_timer_isr, NULL);
+	printf("\nLRI Timed out");
 	return 0;
 }
 
 alt_u32 uri_timer_isr(void* context)
 {
 	URITO = 1;
+	alt_alarm_start(&timer_URITO, SIGNAL_BUFFER, urito_timer_isr, NULL);
+	printf("\nURI Timed out");
 	return 0;
 }
 
@@ -53,6 +65,54 @@ alt_u32 leda_timer_isr(void* context)
 alt_u32 ledv_timer_isr(void* context)
 {
 	LEDVPace = 0;
+	return 0;
+}
+
+alt_u32 asense_timer_isr(void* context)
+{
+	ASense = 0;
+	return 0;
+}
+
+alt_u32 vsense_timer_isr(void* context)
+{
+	VSense = 0;
+	return 0;
+}
+
+alt_u32 avito_timer_isr(void* context)
+{
+	AVITO = 0;
+	return 0;
+}
+
+alt_u32 aeito_timer_isr(void* context)
+{
+	AEITO = 0;
+	return 0;
+}
+
+alt_u32 pvarpto_timer_isr(void* context)
+{
+	PVARPTO = 0;
+	return 0;
+}
+
+alt_u32 vrpto_timer_isr(void* context)
+{
+	VRPTO = 0;
+	return 0;
+}
+
+alt_u32 lrito_timer_isr(void* context)
+{
+	LRITO = 0;
+	return 0;
+}
+
+alt_u32 urito_timer_isr(void* context)
+{
+	URITO = 0;
 	return 0;
 }
 
@@ -76,18 +136,38 @@ void buttons_isr(void* context, alt_u32 id)
 	// clear the edge capture register
 	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(BUTTONS_BASE, 0);
 
-	if (((*temp) & 0x02) > 0) ASense = 1;
-	else ASense = 0;
+	if (((*temp) & 0x02) > 0)
+	{
+		 if (oldKEY1 == 0) {
+			 ASense = 1;
+			 alt_alarm_start(&timer_asense, SIGNAL_BUFFER, asense_timer_isr, NULL);
+		 }
+		 oldKEY1 = 1;
+	}
+	else oldKEY1 = 0;
 
-	if (((*temp) & 0x01) > 0) VSense = 1;
-	else VSense = 0;
+	if (((*temp) & 0x01) > 0)
+	{
+		 if (oldKEY2 == 0) {
+			 VSense = 1;
+			 alt_alarm_start(&timer_vsense, SIGNAL_BUFFER, vsense_timer_isr, NULL);
+		 }
+		 oldKEY2 = 1;
+	}
+	else oldKEY2 = 0;
 }
 
 void read_uart()
 {
 	if ((nbr = read(up, buffer, 1)) > 0) {
-		if (buffer[0] == 65) ASense = 1; // A
-		if (buffer[0] == 86) VSense = 1; // V
+		if (buffer[0] == 65) {
+			ASense = 1; // A
+			alt_alarm_start(&timer_asense, SIGNAL_BUFFER, asense_timer_isr, NULL);
+		}
+		if (buffer[0] == 86) {
+			VSense = 1; // V
+			alt_alarm_start(&timer_vsense, SIGNAL_BUFFER, vsense_timer_isr, NULL);
+		}
 	}
 }
 
@@ -95,62 +175,71 @@ void start_stop_timers()
 {
 	// Starts the timers if event occurred
 	if (AVI_start == 1) {
-		alt_alarm_start(&timer_AVI, AVI_VALUE, avi_timer_isr, NULL);
 		AVITO = 0;
+		alt_alarm_stop(&timer_AVI);
+		alt_alarm_start(&timer_AVI, AVI_VALUE, avi_timer_isr, NULL);
+		printf("\nAVI Start");
 	}
 	if (AEI_start == 1) {
-		alt_alarm_start(&timer_AEI, AEI_VALUE, aei_timer_isr, NULL);
 		AEITO = 0;
+		alt_alarm_stop(&timer_AEI);
+		alt_alarm_start(&timer_AEI, AEI_VALUE, aei_timer_isr, NULL);
+		printf("\nAEI Start");
 	}
 	if (PVARP_start == 1) {
-		alt_alarm_start(&timer_PVARP, PVARP_VALUE, pvarp_timer_isr, NULL);
 		PVARPTO = 0;
+		alt_alarm_stop(&timer_PVARP);
+		alt_alarm_start(&timer_PVARP, PVARP_VALUE, pvarp_timer_isr, NULL);
+		printf("\nPVARP Start");
 	}
 	if (VRP_start == 1) {
-		alt_alarm_start(&timer_VRP, VRP_VALUE, vrp_timer_isr, NULL);
 		VRPTO = 0;
+		alt_alarm_start(&timer_VRP, VRP_VALUE, vrp_timer_isr, NULL);
+		printf("\nVRP Start");
 	}
 	if (LRI_start == 1) {
-		alt_alarm_start(&timer_LRI, LRI_VALUE, lri_timer_isr, NULL);
 		LRITO = 0;
+		alt_alarm_start(&timer_LRI, LRI_VALUE, lri_timer_isr, NULL);
+		printf("\nLRI Start");
 	}
 	if (URI_start == 1) {
-		alt_alarm_start(&timer_URI, URI_VALUE, uri_timer_isr, NULL);
 		URITO = 0;
+		alt_alarm_stop(&timer_URI);
+		alt_alarm_start(&timer_URI, URI_VALUE, uri_timer_isr, NULL);
+		printf("\nURI Start");
 	}
 
 	// Stops the timers if event occurred
 	if (AVI_stop == 1) {
 		alt_alarm_stop(&timer_AVI);
 		AVITO = 0;
+		printf("\nAVI Stopped");
 	}
 	if (AEI_stop == 1) {
 		alt_alarm_stop(&timer_AEI);
 		AEITO = 0;
+		printf("\nAEI Stopped");
 	}
 	if (PVARP_stop == 1) {
 		alt_alarm_stop(&timer_PVARP);
 		PVARPTO = 0;
+		printf("\nPVARP Stopped");
 	}
 	if (VRP_stop == 1) {
 		alt_alarm_stop(&timer_VRP);
 		VRPTO = 0;
+		printf("\nVRP Stopped");
 	}
 	if (LRI_stop == 1) {
 		alt_alarm_stop(&timer_LRI);
 		LRITO = 0;
+		printf("\nLRI Stopped");
 	}
 	if (URI_stop == 1) {
 		alt_alarm_stop(&timer_URI);
 		URITO = 0;
+		printf("\nURI Stopped");
 	}
-}
-
-void reset_inputs()
-{
-	// reseting inputs
-	VSense = 0;
-	ASense = 0;
 }
 
 void show_leds()
@@ -159,6 +248,7 @@ void show_leds()
 	if (APace > 0)
 	{
 		fprintf(fp, "\nA");
+		printf("\nApace");
 		LEDAPace = 1;
 		alt_alarm_stop(&timer_leda);
 		alt_alarm_start(&timer_leda, LED_BUFFER, leda_timer_isr, NULL);
@@ -167,6 +257,7 @@ void show_leds()
 	if (VPace > 0)
 	{
 		fprintf(fp, "\nV");
+		printf("\nVpace");
 		LEDVPace = 1;
 		alt_alarm_stop(&timer_ledv);
 		alt_alarm_start(&timer_ledv, LED_BUFFER, ledv_timer_isr, NULL);
@@ -196,7 +287,6 @@ int main()
 		read_uart();
 		tick();
 		start_stop_timers();
-		reset_inputs();
 		show_leds();
 	}
 
