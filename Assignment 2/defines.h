@@ -29,18 +29,22 @@
 #define LED_BUFFER 200
 #define SIGNAL_BUFFER 1
 
+// temp variables for debouncing keys
 static volatile unsigned int oldKEY1;
 static volatile unsigned int oldKEY2;
 
-static volatile int recv_char;
+// temp variables for debouncing LEDS
 static unsigned int LEDVPace;
 static unsigned int LEDAPace;
 
+// temp variables for working with UART
+static volatile int recv_char;
 FILE* up;
 FILE* fp;
 char buffer[80];
 int nbr;
 
+// Timer ISRs
 alt_u32 avi_timer_isr(void* context);
 alt_u32 aei_timer_isr(void* context);
 alt_u32 pvarp_timer_isr(void* context);
@@ -58,6 +62,7 @@ alt_u32 vrpto_timer_isr(void* context);
 alt_u32 lrito_timer_isr(void* context);
 alt_u32 urito_timer_isr(void* context);
 
+// Timer Alarms
 static alt_alarm timer_AVI;
 static alt_alarm timer_AEI;
 static alt_alarm timer_PVARP;
@@ -75,6 +80,7 @@ static alt_alarm timer_VRPTO;
 static alt_alarm timer_LRITO;
 static alt_alarm timer_URITO;
 
+// Function Definitions
 void init_buttons_pio();
 void buttons_isr(void* context, alt_u32 id);
 void init_uart();

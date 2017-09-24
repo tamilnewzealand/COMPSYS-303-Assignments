@@ -35,7 +35,6 @@ extern char AEITO;
 extern char LRITO;
 extern char URITO;
 
-// Outputs
 extern char VPace;
 extern char APace;
 

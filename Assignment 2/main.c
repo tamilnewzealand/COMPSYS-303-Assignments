@@ -8,6 +8,16 @@
 #include "defines.h"
 #include "sccharts.h"
 
+/*
+ * Following are Timer ISRs for the various timers
+ * in a DDD mode Pacemaker. Each ISR is triggered
+ * when the predefined timeout value has been reached.
+ * The associate Timeout variable is set and the
+ * associated signal buffer timer is started. A return
+ * value of 0 is used to prevent the timer from
+ * automatically restarting.
+ */
+
 alt_u32 avi_timer_isr(void* context)
 {
 	AVITO = 1;
@@ -56,6 +66,12 @@ alt_u32 uri_timer_isr(void* context)
 	return 0;
 }
 
+/*
+ * Signal buffering timers.
+ * These timeout after predefined values and reset
+ * the variables back to 0. This is to prevent
+ * variables from staying high for too long.
+ */
 alt_u32 leda_timer_isr(void* context)
 {
 	LEDAPace = 0;
@@ -118,6 +134,7 @@ alt_u32 urito_timer_isr(void* context)
 
 void init_buttons_pio()
 {
+	// Don't need a context as dealing with global variable only.
 	void* context = NULL;
 
 	// clears the edge capture register
@@ -136,6 +153,9 @@ void buttons_isr(void* context, alt_u32 id)
 	// clear the edge capture register
 	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(BUTTONS_BASE, 0);
 
+	// Key debouncing: variable only set on rising edge
+	// Signal buffer timer used to ensure variable is reset
+	// after appropriate timings.
 	if (((*temp) & 0x02) > 0)
 	{
 		 if (oldKEY1 == 0) {
@@ -159,6 +179,7 @@ void buttons_isr(void* context, alt_u32 id)
 
 void read_uart()
 {
+	// Trys reading a single character from UART
 	if ((nbr = read(up, buffer, 1)) > 0) {
 		if (buffer[0] == 65) {
 			ASense = 1; // A
@@ -171,6 +192,10 @@ void read_uart()
 	}
 }
 
+/*
+ * Starts and stops timers based on inputs from
+ * SCCharts generated code.
+ */
 void start_stop_timers()
 {
 	// Starts the timers if event occurred
@@ -238,7 +263,6 @@ void show_leds()
 		alt_alarm_stop(&timer_leda);
 		alt_alarm_start(&timer_leda, LED_BUFFER, leda_timer_isr, NULL);
 	}
-
 	if (VPace > 0)
 	{
 		fprintf(fp, "\nV");
@@ -248,6 +272,7 @@ void show_leds()
 		alt_alarm_start(&timer_ledv, LED_BUFFER, ledv_timer_isr, NULL);
 	}
 
+	// Outputing buffered values to the LEDs
 	if (LEDVPace > 0)
 	{
 		if (LEDAPace > 0) IOWR_ALTERA_AVALON_PIO_DATA(LEDS_GREEN_BASE, 0x03);
