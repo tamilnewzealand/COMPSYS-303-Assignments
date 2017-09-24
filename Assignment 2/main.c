@@ -174,35 +174,35 @@ void read_uart()
 void start_stop_timers()
 {
 	// Starts the timers if event occurred
-	if (AVI_start == 1) {
+	if (AVI_start > 0) {
 		AVITO = 0;
 		alt_alarm_stop(&timer_AVI);
 		alt_alarm_start(&timer_AVI, AVI_VALUE, avi_timer_isr, NULL);
 		printf("\nAVI Start");
 	}
-	if (AEI_start == 1) {
+	if (AEI_start > 0) {
 		AEITO = 0;
 		alt_alarm_stop(&timer_AEI);
 		alt_alarm_start(&timer_AEI, AEI_VALUE, aei_timer_isr, NULL);
 		printf("\nAEI Start");
 	}
-	if (PVARP_start == 1) {
+	if (PVARP_start > 0) {
 		PVARPTO = 0;
 		alt_alarm_stop(&timer_PVARP);
 		alt_alarm_start(&timer_PVARP, PVARP_VALUE, pvarp_timer_isr, NULL);
 		printf("\nPVARP Start");
 	}
-	if (VRP_start == 1) {
+	if (VRP_start > 0) {
 		VRPTO = 0;
 		alt_alarm_start(&timer_VRP, VRP_VALUE, vrp_timer_isr, NULL);
 		printf("\nVRP Start");
 	}
-	if (LRI_start == 1) {
+	if (LRI_start > 0) {
 		LRITO = 0;
 		alt_alarm_start(&timer_LRI, LRI_VALUE, lri_timer_isr, NULL);
 		printf("\nLRI Start");
 	}
-	if (URI_start == 1) {
+	if (URI_start > 0) {
 		URITO = 0;
 		alt_alarm_stop(&timer_URI);
 		alt_alarm_start(&timer_URI, URI_VALUE, uri_timer_isr, NULL);
@@ -210,35 +210,20 @@ void start_stop_timers()
 	}
 
 	// Stops the timers if event occurred
-	if (AVI_stop == 1) {
+	if (AVI_stop > 0) {
 		alt_alarm_stop(&timer_AVI);
 		AVITO = 0;
 		printf("\nAVI Stopped");
 	}
-	if (AEI_stop == 1) {
+	if (AEI_stop > 0) {
 		alt_alarm_stop(&timer_AEI);
 		AEITO = 0;
 		printf("\nAEI Stopped");
 	}
-	if (PVARP_stop == 1) {
-		alt_alarm_stop(&timer_PVARP);
-		PVARPTO = 0;
-		printf("\nPVARP Stopped");
-	}
-	if (VRP_stop == 1) {
-		alt_alarm_stop(&timer_VRP);
-		VRPTO = 0;
-		printf("\nVRP Stopped");
-	}
-	if (LRI_stop == 1) {
+	if (LRI_stop > 0) {
 		alt_alarm_stop(&timer_LRI);
 		LRITO = 0;
 		printf("\nLRI Stopped");
-	}
-	if (URI_stop == 1) {
-		alt_alarm_stop(&timer_URI);
-		URITO = 0;
-		printf("\nURI Stopped");
 	}
 }
 

@@ -24,11 +24,8 @@ extern char LRI_start;
 extern char URI_start;
 
 extern char AVI_stop;
-extern char PVARP_stop;
-extern char VRP_stop;
 extern char AEI_stop;
 extern char LRI_stop;
-extern char URI_stop;
 
 // Outputs
 extern char AVITO;
