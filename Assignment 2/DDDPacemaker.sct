@@ -7,6 +7,12 @@ scchart DDDPacemaker {
 	initial state top{
 	  	signal PVARP_ex, VRP_ex, URI_ex;
 	  	
+	  	//Atrioventricular Interval
+	  	//This region models the maximum time between an atrial event and its subsequent ventricular event.
+	  	//
+	  	//Functionality:
+	  	//Upon sensing an atrial event, an AVI timer is started. Should the timer timeout, a ventricular pacing signal is generated.
+	  	//Otherwise, if a ventricular event is sensed beforehand,the counter is stopped and is reset once the PVARP period is finished.
 		region AVI:
 		initial state intState --> commit1 with APace
 					   --> commit1 with ASense;
@@ -18,18 +24,34 @@ scchart DDDPacemaker {
 		state waitPVARP --> intState with PVARP_ex;
 		state waitURI --> intState with URI_ex / VPace;
 		
+		//Post-Ventricular Atrial Refractory Period
+		//This region models the time after a ventricular event where any atrial events are ignored as Atrial Refractory (AR) signals.
+		//
+		//Functionality:
+		//Upon sensing a ventricular event, a PVARP timer is started. Once it times out, it resets and exerts a signal indicating that the PVARP period is completed.
 		region PVARP:
 		initial state idle --> commit1 with VSense
 		 				   --> commit1 with VPace;
 		connector state commit1 --> waitPVARP immediate with / PVARP_start;
 		state waitPVARP --> idle with PVARPTO / PVARP_ex;
 		
+		//Ventricular Refractory Period
+		//This region models the time after a ventricular event where any other ventricular events are ignored as Ventricular Refractory (VR) signals.
+		//
+		//Functionality:
+		//Upon sensing a ventricular event, a VRP timer is started. Once it times out, it resets and exerts a signal indicating that the VRP period is completed.
 		region VRP:
 		initial state idle --> commit1 with VSense
 						   --> commit1 with VPace;
 		connector state commit1 --> waitVRP immediate with / VRP_start;
 		state waitVRP --> idle with VRPTO / VRP_ex;
 		
+		//Atrial Escape Interval
+		//This region models the maximum time between a ventricular event and its subsequent atrial event.
+		//
+	  	//Functionality:
+	  	//Upon sensing a ventricular event, an AEI timer is started. Should the timer timeout, an atrial pacing signal is generated.
+	  	//Otherwise, if an atrial event is sensed beforehand,the counter is stopped and is reset once the VRP period is finished.
 		region AEI:
 		initial state intState --> commit1 with VSense
 							   --> commit1 with VPace;
@@ -40,6 +62,13 @@ scchart DDDPacemaker {
 		connector state commit2 --> waitVRP immediate with / AEI_stop; 
 		state waitVRP --> intState with VRP_ex;
 		
+		//Lower Rate Interval
+		//This region models the slowest rate at which the heart is allowed to operate. 
+		//
+	  	//Functionality:
+	  	//Upon sensing a ventricular event, any LRI timers are stopped. Otherwise, if a LRI timer was running and timed out, a ventricular pacing signal is generated.
+	  	//Afterwards, the LRI timer is started and, after the VRP period is finished, the region reaches its initial state where it acts depending on whether
+		//a ventricular event is sensed or if the timer times out first.
 		region LRI:
 		state waitVRP --> waitLRI with VRP_ex;
 		initial state waitLRI "waitLRI"--> commit1 with VSense
@@ -48,6 +77,12 @@ scchart DDDPacemaker {
 		connector state commit1 --> intState immediate with / LRI_stop;
 		state intState --> waitVRP with /LRI_start;
 		
+		//Upper Rate Interval
+		//The fastest rate at which the pacemaker will ever pace the heart at. 
+		//This is measured as the time between ventricular events.
+		//
+		//Functionality:
+		//Upon sensing a ventricular event, a URI timer is started. Once it times out, it resets and exerts a signal indicating that the URI period is completed.
 		region URI:
 		initial state init --> commit1 with VSense
 						   --> commit1 with VPace;
